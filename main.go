@@ -1,10 +1,43 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 )
+
+func ConnectDB(uri string) *mongo.Client {
+	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+
+	if err != nil {
+		panic("Failed to create client: " + err.Error())
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	err = client.Connect(ctx)
+
+	if err != nil {
+		panic("Failed to connect to database: " + err.Error())
+	}
+
+	err = client.Ping(ctx, nil)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println("Connected to MongoDB!")
+	return client
+}
 
 type entry struct {
 	ID   int    `json:"id" binding:"required"`
@@ -128,7 +161,44 @@ func removeTodoById(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, res)
 }
 
+func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
+	collec := client.Database("halan").Collection(collectionName)
+	return collec
+}
+
 func main() {
+
+	_ = godotenv.Load()
+
+	mongoUri := os.Getenv("MONGO_URI")
+	collectionName := os.Getenv("MONGO_COLLECTION_NAME")
+
+	if mongoUri == "" {
+		panic("env variable MONGO_URI not found")
+	}
+
+	if collectionName == "" {
+		panic("env variable MONGO_COLLECTION_NAME not found")
+	}
+
+	var DB *mongo.Client = ConnectDB(mongoUri)
+
+	cursor, err := GetCollection(DB, collectionName).Find(context.Background(), bson.D{{}})
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var collectionData []bson.M
+
+	if err = cursor.All(context.Background(), &collectionData); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println("collectionData:", collectionData)
+
 	router := gin.Default()
 
 	router.GET("", func(c *gin.Context) {
