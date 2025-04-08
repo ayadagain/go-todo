@@ -1,13 +1,20 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
-	"strconv"
+	"os"
 )
 
 type entry struct {
-	ID   int    `json:"id" binding:"required"`
 	Data string `json:"data" binding:"required"`
 }
 
@@ -17,10 +24,12 @@ type response struct {
 	Data    any    `json:"data"`
 }
 
-var todos = []entry{}
+var collectionName = "halan"
 
 func addTodo(c *gin.Context) {
 	var newTodo entry
+
+	collc := Collc(collectionName)
 
 	if err := c.BindJSON(&newTodo); err != nil {
 		res := &response{
@@ -29,53 +38,67 @@ func addTodo(c *gin.Context) {
 			Data:    err.Error(),
 		}
 
-		c.IndentedJSON(http.StatusCreated, res)
+		c.IndentedJSON(res.Status, res)
 		return
 	}
 
-	todos = append(todos, newTodo)
+	isInserted := InsertTodo(collc, newTodo)
 
-	res := &response{
-		Message: "success",
-		Status:  http.StatusOK,
-		Data:    newTodo,
+	if isInserted {
+		res := &response{
+			Message: "success",
+			Status:  http.StatusOK,
+			Data:    newTodo,
+		}
+
+		c.IndentedJSON(res.Status, res)
+	} else {
+
+		res := &response{
+			Message: "fail",
+			Status:  http.StatusBadRequest,
+			Data:    nil,
+		}
+
+		c.IndentedJSON(res.Status, res)
+
 	}
-
-	c.IndentedJSON(http.StatusCreated, res)
 }
 
 func getTodos(c *gin.Context) {
+	collc := Collc(collectionName)
+	data := FilterTodos(collc, nil)
 
 	res := &response{
 		Message: "success",
 		Status:  http.StatusOK,
-		Data:    todos,
+		Data:    data,
 	}
 
-	c.IndentedJSON(http.StatusCreated, res)
+	c.IndentedJSON(res.Status, res)
 }
 
 func getTodoById(c *gin.Context) {
 	id := c.Param("id")
 
-	i, err := strconv.Atoi(id)
+	collc := Collc(collectionName)
 
-	if err != nil {
+	objId, _ := primitive.ObjectIDFromHex(id)
+
+	data := FilterTodos(collc, &bson.D{{
+		"_id", objId,
+	}})
+
+	if len(data) > 0 {
 		res := &response{
-			Message: "fail",
-			Status:  http.StatusInternalServerError,
-			Data:    "Something went wrong",
+			Message: "success",
+			Status:  http.StatusOK,
+			Data:    data[0],
 		}
 
-		c.IndentedJSON(http.StatusCreated, res)
+		c.IndentedJSON(res.Status, res)
 		return
-	}
 
-	for _, item := range todos {
-		if item.ID == i {
-			c.IndentedJSON(http.StatusOK, item)
-			return
-		}
 	}
 
 	res := &response{
@@ -84,13 +107,16 @@ func getTodoById(c *gin.Context) {
 		Data:    "Item not found!",
 	}
 
-	c.IndentedJSON(http.StatusCreated, res)
+	c.IndentedJSON(res.Status, res)
+
 }
 
 func removeTodoById(c *gin.Context) {
 	id := c.Param("id")
 
-	i, err := strconv.Atoi(id)
+	i, err := primitive.ObjectIDFromHex(id)
+
+	collc := Collc(collectionName)
 
 	if err != nil {
 		res := &response{
@@ -99,24 +125,22 @@ func removeTodoById(c *gin.Context) {
 			Data:    "Something went wrong",
 		}
 
-		c.IndentedJSON(http.StatusCreated, res)
+		c.IndentedJSON(res.Status, res)
 		return
 	}
 
-	for key, item := range todos {
-		if item.ID == i {
-			todos = append(todos[:key], todos[key+1:]...)
+	isDeleted := DeleteTodo(collc, i)
 
-			res := &response{
-				Message: "fail",
-				Status:  http.StatusInternalServerError,
-				Data:    "Item deleted successfully",
-			}
-
-			c.IndentedJSON(http.StatusCreated, res)
-
-			return
+	if isDeleted {
+		res := &response{
+			Message: "success",
+			Status:  http.StatusOK,
+			Data:    nil,
 		}
+
+		c.IndentedJSON(res.Status, res)
+
+		return
 	}
 
 	res := &response{
@@ -125,10 +149,78 @@ func removeTodoById(c *gin.Context) {
 		Data:    "Item not found!",
 	}
 
-	c.IndentedJSON(http.StatusCreated, res)
+	c.IndentedJSON(res.Status, res)
+}
+
+func FilterTodos(collection *mongo.Collection, query *bson.D) []bson.M {
+
+	if query == nil {
+		query = &bson.D{}
+	}
+
+	cursor, err := collection.Find(context.Background(), query)
+
+	if err != nil {
+		fmt.Println("Something went wrong: ", err)
+		return nil
+	}
+
+	var results []bson.M
+
+	if err = cursor.All(context.Background(), &results); err != nil {
+		fmt.Println("Something went wrong: ", err)
+		return nil
+	}
+
+	return results
+}
+
+func InsertTodo(collection *mongo.Collection, data entry) bool {
+
+	_, err := collection.InsertOne(context.Background(), data)
+
+	if err != nil {
+		fmt.Println("Something went wrong: ", err)
+		return false
+	}
+
+	return true
+
+}
+
+func DeleteTodo(collection *mongo.Collection, entryId primitive.ObjectID) bool {
+	cursor, err := collection.DeleteOne(context.TODO(), bson.D{
+		{"_id", entryId},
+	})
+
+	if err != nil {
+		fmt.Println("Something went wrong: ", err)
+		return false
+	}
+
+	if cursor.DeletedCount > 0 {
+		return true
+	}
+
+	return false
+
 }
 
 func main() {
+
+	_ = godotenv.Load()
+
+	mongoUri := os.Getenv("MONGO_URI")
+	collectionName := os.Getenv("MONGO_COLLECTION_NAME")
+
+	if mongoUri == "" {
+		panic("env variable MONGO_URI not found")
+	}
+
+	if collectionName == "" {
+		panic("env variable MONGO_COLLECTION_NAME not found")
+	}
+
 	router := gin.Default()
 
 	router.GET("", func(c *gin.Context) {
