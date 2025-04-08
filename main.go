@@ -38,7 +38,7 @@ func addTodo(c *gin.Context) {
 			Data:    err.Error(),
 		}
 
-		c.IndentedJSON(http.StatusCreated, res)
+		c.IndentedJSON(res.Status, res)
 		return
 	}
 
@@ -96,7 +96,7 @@ func getTodoById(c *gin.Context) {
 			Data:    data[0],
 		}
 
-		c.IndentedJSON(http.StatusCreated, res)
+		c.IndentedJSON(res.Status, res)
 		return
 
 	}
@@ -125,7 +125,7 @@ func removeTodoById(c *gin.Context) {
 			Data:    "Something went wrong",
 		}
 
-		c.IndentedJSON(http.StatusCreated, res)
+		c.IndentedJSON(res.Status, res)
 		return
 	}
 
@@ -138,7 +138,7 @@ func removeTodoById(c *gin.Context) {
 			Data:    nil,
 		}
 
-		c.IndentedJSON(http.StatusCreated, res)
+		c.IndentedJSON(res.Status, res)
 
 		return
 	}
@@ -149,7 +149,7 @@ func removeTodoById(c *gin.Context) {
 		Data:    "Item not found!",
 	}
 
-	c.IndentedJSON(http.StatusCreated, res)
+	c.IndentedJSON(res.Status, res)
 }
 
 func FilterTodos(collection *mongo.Collection, query *bson.D) []bson.M {
@@ -177,14 +177,12 @@ func FilterTodos(collection *mongo.Collection, query *bson.D) []bson.M {
 
 func InsertTodo(collection *mongo.Collection, data entry) bool {
 
-	cursor, err := collection.InsertOne(context.Background(), data)
+	_, err := collection.InsertOne(context.Background(), data)
 
 	if err != nil {
 		fmt.Println("Something went wrong: ", err)
 		return false
 	}
-
-	fmt.Println("Inserted: ", cursor.InsertedID)
 
 	return true
 
