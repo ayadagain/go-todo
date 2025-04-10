@@ -11,13 +11,18 @@ import (
 )
 
 type entry struct {
-	Data string `json:"data" binding:"required"`
+	Data string `json:"data" binding:"required" bson:"data"`
 }
 
 type response struct {
 	Message string `json:"message"`
 	Status  int    `json:"status"`
-	Data    any    `json:"data" `
+	Data    any    `json:"data"`
+}
+
+type rpcResponse struct {
+	ObjectId string `json:"_id,omitempty" bson:"_id"`
+	Message  string `json:"message"`
 }
 
 type networking struct {
@@ -32,17 +37,25 @@ func newNetworking() *networking {
 
 func (s *networking) getTodos(c *gin.Context) {
 	ctx := context.TODO()
+	var result []rpcResponse
 
-	r, err := s.Hgrpc.SelectTodo(ctx, &proto.TodoReq{})
+	r, err := s.Hgrpc.GetTodos(ctx, &proto.GetTodosReq{})
 
 	if err != nil {
 		log.Fatalf("something went wrong: %v", err)
 	}
 
+	for _, todo := range r.Todos {
+		result = append(result, rpcResponse{
+			ObjectId: todo.ObjectId,
+			Message:  todo.Message,
+		})
+	}
+
 	res := &response{
 		Message: "success",
 		Status:  http.StatusOK,
-		Data:    r.Todos,
+		Data:    result,
 	}
 
 	c.IndentedJSON(res.Status, res)
@@ -67,8 +80,8 @@ func (s *networking) getTodoById(c *gin.Context) {
 
 	objIdString := objId.Hex()
 
-	r, err := s.Hgrpc.SelectTodo(ctx, &proto.TodoReq{
-		ObjectId: &objIdString,
+	r, err := s.Hgrpc.GetTodo(ctx, &proto.GetTodoReq{
+		ObjectId: objIdString,
 	})
 
 	if err != nil {
@@ -78,7 +91,10 @@ func (s *networking) getTodoById(c *gin.Context) {
 	res := &response{
 		Message: "success",
 		Status:  http.StatusOK,
-		Data:    r.Todos,
+		Data: &rpcResponse{
+			ObjectId: r.ObjectId,
+			Message:  r.Message,
+		},
 	}
 
 	c.IndentedJSON(res.Status, res)
@@ -103,27 +119,17 @@ func (s *networking) removeTodoById(c *gin.Context) {
 
 	objIdString := objId.Hex()
 
-	r, err := s.Hgrpc.DeleteTodo(ctx, &proto.TodoReq{
-		ObjectId: &objIdString,
+	_, err = s.Hgrpc.DeleteTodo(ctx, &proto.DeleteTodoReq{
+		ObjectId: objIdString,
 	})
 
 	if err != nil {
 		log.Fatalf("something went wrong: %v", err)
 	}
 
-	if r.Message == "" {
-		res := &response{
-			Message: "success",
-			Status:  http.StatusOK,
-			Data:    nil,
-		}
-
-		c.IndentedJSON(res.Status, res)
-		return
-	}
 	res := &response{
-		Message: "fail",
-		Status:  http.StatusBadRequest,
+		Message: "success",
+		Status:  http.StatusOK,
 		Data:    nil,
 	}
 
@@ -147,8 +153,8 @@ func (s *networking) insertTodo(c *gin.Context) {
 		return
 	}
 
-	r, err := s.Hgrpc.InsertTodo(ctx, &proto.TodoReq{
-		Body: newTodo.Data,
+	r, err := s.Hgrpc.InsertTodo(ctx, &proto.InsertTodoReq{
+		Data: newTodo.Data,
 	})
 
 	if err != nil {
@@ -165,7 +171,7 @@ func (s *networking) insertTodo(c *gin.Context) {
 	res := &response{
 		Message: "success",
 		Status:  http.StatusOK,
-		Data:    r,
+		Data:    &rpcResponse{Message: r.Data},
 	}
 
 	c.IndentedJSON(res.Status, res)

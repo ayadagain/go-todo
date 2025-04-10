@@ -11,6 +11,11 @@ import (
 	"os"
 )
 
+type TodoModel struct {
+	ID   primitive.ObjectID `bson:"_id,omitempty"`
+	Data string             `bson:"data" json:"k"`
+}
+
 func Conn() *mongo.Client {
 	_ = godotenv.Load("../.env")
 
@@ -48,7 +53,7 @@ func Collc(collcName string) *mongo.Collection {
 	return collec
 }
 
-func FilterTodos(collection *mongo.Collection, query *bson.D) []bson.M {
+func FilterTodos(collection *mongo.Collection, query *bson.D) []TodoModel {
 	if query == nil {
 		query = &bson.D{}
 	}
@@ -60,19 +65,19 @@ func FilterTodos(collection *mongo.Collection, query *bson.D) []bson.M {
 		return nil
 	}
 
-	var results []bson.M
+	var result []TodoModel
 
-	if err = cursor.All(context.Background(), &results); err != nil {
+	if err = cursor.All(context.Background(), &result); err != nil {
 		fmt.Println("Something went wrong: ", err)
 		return nil
 	}
 
-	return results
+	return result
 }
 
 func InsertTodo(collection *mongo.Collection, data any) bool {
-	_, err := collection.InsertOne(context.Background(), &bson.D{
-		{"data", data},
+	_, err := collection.InsertOne(context.Background(), &TodoModel{
+		Data: data.(string),
 	})
 
 	if err != nil {

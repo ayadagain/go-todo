@@ -20,17 +20,41 @@ type Server struct {
 	dbCollection *mongo.Collection
 }
 
-func (s *Server) SelectTodo(ctx context.Context, req *proto.TodoReq) (res *proto.Todos, err error) {
-	var pp []*proto.TodoRes
+func (s *Server) GetTodo(ctx context.Context, req *proto.GetTodoReq) (res *proto.GetTodoRes, err error) {
 	var qry *bson.D
 
-	if req.ObjectId != nil {
-		oId, _ := primitive.ObjectIDFromHex(*req.ObjectId)
-
-		qry = &bson.D{{
-			"_id", oId,
-		}}
+	if req.ObjectId == "" {
+		return nil, status.Error(codes.InvalidArgument, "ObjectId is required")
 	}
+
+	oId, err := primitive.ObjectIDFromHex(req.ObjectId)
+
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	qry = &bson.D{{
+		"_id", oId,
+	}}
+
+	data := db.FilterTodos(s.dbCollection, qry)
+
+	if len(data) == 0 || data == nil {
+		return nil, status.Errorf(codes.NotFound, "not found")
+	}
+
+	resp := data[0]
+
+	protoReq := &proto.GetTodoRes{
+		ObjectId: resp.ID.Hex(),
+		Message:  resp.Data,
+	}
+	return protoReq, nil
+}
+
+func (s *Server) GetTodos(ctx context.Context, req *proto.GetTodosReq) (res *proto.GetTodosRes, err error) {
+	var pp []*proto.GetTodoRes
+	var qry *bson.D
 
 	data := db.FilterTodos(s.dbCollection, qry)
 
@@ -39,32 +63,30 @@ func (s *Server) SelectTodo(ctx context.Context, req *proto.TodoReq) (res *proto
 	}
 
 	for _, t := range data {
-		_id := t["_id"].(primitive.ObjectID).Hex()
+		_id := t.ID.Hex()
 
-		pp = append(pp, &proto.TodoRes{
-			Message:  t["data"].(string),
-			ObjectId: &_id,
+		pp = append(pp, &proto.GetTodoRes{
+			Message:  t.Data,
+			ObjectId: _id,
 		})
 	}
 
-	protoReq := &proto.Todos{Todos: pp}
+	protoReq := &proto.GetTodosRes{Todos: pp}
 	return protoReq, nil
 }
 
-func (s *Server) DeleteTodo(ctx context.Context, req *proto.TodoReq) (res *proto.TodoRes, err error) {
-	if *req.ObjectId == "" {
+func (s *Server) DeleteTodo(ctx context.Context, req *proto.DeleteTodoReq) (res *proto.DeleteTodoRes, err error) {
+	if req.ObjectId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "objectId is required")
 	}
 
-	if req.ObjectId != nil {
-		oId, _ := primitive.ObjectIDFromHex(*req.ObjectId)
+	if req.ObjectId != "" {
+		oId, _ := primitive.ObjectIDFromHex(req.ObjectId)
 
 		isDeleted := db.DeleteTodo(s.dbCollection, oId)
 
 		if isDeleted {
-			return &proto.TodoRes{
-				Message: "",
-			}, nil
+			return &proto.DeleteTodoRes{}, nil
 		}
 
 		return nil, status.Errorf(codes.NotFound, "not found")
@@ -74,16 +96,16 @@ func (s *Server) DeleteTodo(ctx context.Context, req *proto.TodoReq) (res *proto
 	return nil, status.Errorf(codes.NotFound, "Something went wrong")
 }
 
-func (s *Server) InsertTodo(ctx context.Context, req *proto.TodoReq) (res *proto.TodoRes, err error) {
-	if req.Body == "" {
+func (s *Server) InsertTodo(ctx context.Context, req *proto.InsertTodoReq) (res *proto.InsertTodoRes, err error) {
+	if req.Data == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "body is empty")
 	}
 
-	isInserted := db.InsertTodo(s.dbCollection, req.Body)
+	isInserted := db.InsertTodo(s.dbCollection, req.Data)
 
 	if isInserted {
-		return &proto.TodoRes{
-			Message: req.Body,
+		return &proto.InsertTodoRes{
+			Data: req.Data,
 		}, nil
 	}
 

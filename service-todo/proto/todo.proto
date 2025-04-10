@@ -2,23 +2,38 @@ syntax = 'proto3';
 package proto;
 option go_package = '/;proto';
 
-message TodoReq {
-  string Body = 1;
-  optional string ObjectId = 2;
+message InsertTodoReq {
+  string Data = 1;
 }
 
-message TodoRes {
-
-   optional string ObjectId = 1;
-   string Message = 2;
+message InsertTodoRes {
+  string Data = 1;
 }
 
-message Todos {
-  repeated TodoRes Todos = 1;
+message DeleteTodoReq {
+  string ObjectId = 1;
+}
+
+message DeleteTodoRes {}
+
+message GetTodoReq {
+  string ObjectId = 1;
+}
+
+message GetTodoRes {
+  string ObjectId = 1;
+  string Message = 2;
+}
+
+message GetTodosReq {}
+
+message GetTodosRes {
+  repeated GetTodoRes Todos = 1;
 }
 
 service TodoService {
-  rpc InsertTodo(TodoReq) returns (TodoRes) {}
-  rpc DeleteTodo(TodoReq) returns (TodoRes) {}
-  rpc SelectTodo(TodoReq) returns (Todos) {}
+  rpc InsertTodo(InsertTodoReq) returns (InsertTodoRes) {}
+  rpc DeleteTodo(DeleteTodoReq) returns (DeleteTodoRes) {}
+  rpc GetTodo(GetTodoReq) returns (GetTodoRes) {}
+  rpc GetTodos(GetTodosReq) returns (GetTodosRes) {}
 }
