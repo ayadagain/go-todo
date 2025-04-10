@@ -12,8 +12,9 @@ import (
 )
 
 type TodoModel struct {
-	ID   primitive.ObjectID `bson:"_id,omitempty"`
-	Data string             `bson:"data" json:"k"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	Data      string             `bson:"data" json:"k"`
+	CreatedBy string             `bson:"created_by" json:"created_by"`
 }
 
 func Conn() *mongo.Client {
@@ -75,9 +76,10 @@ func FilterTodos(collection *mongo.Collection, query *bson.D) []TodoModel {
 	return result
 }
 
-func InsertTodo(collection *mongo.Collection, data any) bool {
+func InsertTodo(collection *mongo.Collection, data any, userId string) bool {
 	_, err := collection.InsertOne(context.Background(), &TodoModel{
-		Data: data.(string),
+		Data:      data.(string),
+		CreatedBy: userId,
 	})
 
 	if err != nil {

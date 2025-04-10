@@ -18,11 +18,13 @@ message DeleteTodoRes {}
 
 message GetTodoReq {
   string ObjectId = 1;
+  string CreatedBy = 2;
 }
 
 message GetTodoRes {
   string ObjectId = 1;
   string Message = 2;
+  string CreatedBy = 3;
 }
 
 message GetTodosReq {}

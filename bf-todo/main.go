@@ -4,14 +4,19 @@ import (
 	hgrpc "assm/bf-todo/grpc"
 	"assm/service-todo/proto"
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/grpc/metadata"
 	"log"
 	"net/http"
+	"os"
 )
 
 type entry struct {
-	Data string `json:"data" binding:"required" bson:"data"`
+	Data   string `json:"data" binding:"required"`
+	UserId string `json:"user_id"`
 }
 
 type response struct {
@@ -21,8 +26,9 @@ type response struct {
 }
 
 type rpcResponse struct {
-	ObjectId string `json:"_id,omitempty" bson:"_id"`
-	Message  string `json:"message"`
+	ObjectId  string `json:"_id,omitempty" bson:"_id"`
+	Message   string `json:"message"`
+	CreatedBy string `json:"created_by,omitempty"`
 }
 
 type networking struct {
@@ -32,6 +38,27 @@ type networking struct {
 func newNetworking() *networking {
 	return &networking{
 		Hgrpc: hgrpc.GrpcConn(),
+	}
+}
+
+func auth(secretKey string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		serverKey := c.Request.Header.Get("ServerKey")
+
+		if serverKey != secretKey {
+			res := &response{
+				Message: "fail",
+				Status:  http.StatusUnauthorized,
+				Data:    nil,
+			}
+
+			c.IndentedJSON(res.Status, res)
+			c.Abort()
+
+			return
+		}
+
+		c.Next()
 	}
 }
 
@@ -46,9 +73,12 @@ func (s *networking) getTodos(c *gin.Context) {
 	}
 
 	for _, todo := range r.Todos {
+		fmt.Println("todo: ", todo)
+
 		result = append(result, rpcResponse{
-			ObjectId: todo.ObjectId,
-			Message:  todo.Message,
+			ObjectId:  todo.ObjectId,
+			Message:   todo.Message,
+			CreatedBy: todo.CreatedBy,
 		})
 	}
 
@@ -92,8 +122,9 @@ func (s *networking) getTodoById(c *gin.Context) {
 		Message: "success",
 		Status:  http.StatusOK,
 		Data: &rpcResponse{
-			ObjectId: r.ObjectId,
-			Message:  r.Message,
+			ObjectId:  r.ObjectId,
+			Message:   r.Message,
+			CreatedBy: r.CreatedBy,
 		},
 	}
 
@@ -138,7 +169,8 @@ func (s *networking) removeTodoById(c *gin.Context) {
 }
 
 func (s *networking) insertTodo(c *gin.Context) {
-	ctx := context.TODO()
+	md := metadata.New(map[string]string{"userId": "123"})
+	ctxWithMd := metadata.NewOutgoingContext(context.Background(), md)
 
 	var newTodo entry
 
@@ -153,7 +185,7 @@ func (s *networking) insertTodo(c *gin.Context) {
 		return
 	}
 
-	r, err := s.Hgrpc.InsertTodo(ctx, &proto.InsertTodoReq{
+	r, err := s.Hgrpc.InsertTodo(ctxWithMd, &proto.InsertTodoReq{
 		Data: newTodo.Data,
 	})
 
@@ -178,19 +210,15 @@ func (s *networking) insertTodo(c *gin.Context) {
 }
 
 func main() {
+	_ = godotenv.Load("../.env")
+
+	secretKey := os.Getenv("SECRET_KEY")
+
 	router := gin.Default()
 	net := newNetworking()
 
-	router.GET("", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "welcome to the apiÏ",
-		})
-	})
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	router.Use(auth(secretKey))
+
 	router.GET("/todos", net.getTodos)
 	router.GET("/todos/:id", net.getTodoById)
 	router.POST("/todos", net.insertTodo)

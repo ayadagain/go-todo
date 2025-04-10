@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
@@ -46,8 +47,9 @@ func (s *Server) GetTodo(ctx context.Context, req *proto.GetTodoReq) (res *proto
 	resp := data[0]
 
 	protoReq := &proto.GetTodoRes{
-		ObjectId: resp.ID.Hex(),
-		Message:  resp.Data,
+		ObjectId:  resp.ID.Hex(),
+		Message:   resp.Data,
+		CreatedBy: resp.CreatedBy,
 	}
 	return protoReq, nil
 }
@@ -66,8 +68,9 @@ func (s *Server) GetTodos(ctx context.Context, req *proto.GetTodosReq) (res *pro
 		_id := t.ID.Hex()
 
 		pp = append(pp, &proto.GetTodoRes{
-			Message:  t.Data,
-			ObjectId: _id,
+			Message:   t.Data,
+			ObjectId:  _id,
+			CreatedBy: t.CreatedBy,
 		})
 	}
 
@@ -101,16 +104,25 @@ func (s *Server) InsertTodo(ctx context.Context, req *proto.InsertTodoReq) (res 
 		return nil, status.Errorf(codes.InvalidArgument, "body is empty")
 	}
 
-	isInserted := db.InsertTodo(s.dbCollection, req.Data)
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		userId := md["userid"]
 
-	if isInserted {
-		return &proto.InsertTodoRes{
-			Data: req.Data,
-		}, nil
+		if len(userId) == 0 {
+			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+		}
+
+		isInserted := db.InsertTodo(s.dbCollection, req.Data, userId[0])
+
+		if isInserted {
+			return &proto.InsertTodoRes{
+				Data: req.Data,
+			}, nil
+		}
 	}
 
 	return nil, status.Errorf(codes.NotFound, "Something went wrong")
 }
+
 func main() {
 	listener, err := net.Listen("tcp", ":9000")
 

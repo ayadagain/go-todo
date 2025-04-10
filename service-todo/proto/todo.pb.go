@@ -192,6 +192,7 @@ func (*DeleteTodoRes) Descriptor() ([]byte, []int) {
 type GetTodoReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ObjectId      string                 `protobuf:"bytes,1,opt,name=ObjectId,proto3" json:"ObjectId,omitempty"`
+	CreatedBy     string                 `protobuf:"bytes,2,opt,name=CreatedBy,proto3" json:"CreatedBy,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -233,10 +234,18 @@ func (x *GetTodoReq) GetObjectId() string {
 	return ""
 }
 
+func (x *GetTodoReq) GetCreatedBy() string {
+	if x != nil {
+		return x.CreatedBy
+	}
+	return ""
+}
+
 type GetTodoRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ObjectId      string                 `protobuf:"bytes,1,opt,name=ObjectId,proto3" json:"ObjectId,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
+	CreatedBy     string                 `protobuf:"bytes,3,opt,name=CreatedBy,proto3" json:"CreatedBy,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -281,6 +290,13 @@ func (x *GetTodoRes) GetObjectId() string {
 func (x *GetTodoRes) GetMessage() string {
 	if x != nil {
 		return x.Message
+	}
+	return ""
+}
+
+func (x *GetTodoRes) GetCreatedBy() string {
+	if x != nil {
+		return x.CreatedBy
 	}
 	return ""
 }
@@ -377,14 +393,16 @@ const file_todo_proto_rawDesc = "" +
 	"\x04Data\x18\x01 \x01(\tR\x04Data\"+\n" +
 	"\rDeleteTodoReq\x12\x1a\n" +
 	"\bObjectId\x18\x01 \x01(\tR\bObjectId\"\x0f\n" +
-	"\rDeleteTodoRes\"(\n" +
+	"\rDeleteTodoRes\"F\n" +
 	"\n" +
 	"GetTodoReq\x12\x1a\n" +
-	"\bObjectId\x18\x01 \x01(\tR\bObjectId\"B\n" +
+	"\bObjectId\x18\x01 \x01(\tR\bObjectId\x12\x1c\n" +
+	"\tCreatedBy\x18\x02 \x01(\tR\tCreatedBy\"`\n" +
 	"\n" +
 	"GetTodoRes\x12\x1a\n" +
 	"\bObjectId\x18\x01 \x01(\tR\bObjectId\x12\x18\n" +
-	"\aMessage\x18\x02 \x01(\tR\aMessage\"\r\n" +
+	"\aMessage\x18\x02 \x01(\tR\aMessage\x12\x1c\n" +
+	"\tCreatedBy\x18\x03 \x01(\tR\tCreatedBy\"\r\n" +
 	"\vGetTodosReq\"6\n" +
 	"\vGetTodosRes\x12'\n" +
 	"\x05Todos\x18\x01 \x03(\v2\x11.proto.GetTodoResR\x05Todos2\xee\x01\n" +
