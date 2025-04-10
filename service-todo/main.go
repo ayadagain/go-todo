@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,17 +15,14 @@ import (
 	"net"
 )
 
-var collectionName = "halan"
-
 type Server struct {
 	proto.UnimplementedTodoServiceServer
+	dbCollection *mongo.Collection
 }
 
 func (s *Server) SelectTodo(ctx context.Context, req *proto.TodoReq) (res *proto.Todos, err error) {
 	var pp []*proto.TodoRes
 	var qry *bson.D
-
-	collc := db.Collc(collectionName)
 
 	if req.ObjectId != nil {
 		oId, _ := primitive.ObjectIDFromHex(*req.ObjectId)
@@ -34,7 +32,7 @@ func (s *Server) SelectTodo(ctx context.Context, req *proto.TodoReq) (res *proto
 		}}
 	}
 
-	data := db.FilterTodos(collc, qry)
+	data := db.FilterTodos(s.dbCollection, qry)
 
 	if len(data) == 0 || data == nil {
 		return nil, status.Errorf(codes.NotFound, "not found")
@@ -54,8 +52,6 @@ func (s *Server) SelectTodo(ctx context.Context, req *proto.TodoReq) (res *proto
 }
 
 func (s *Server) DeleteTodo(ctx context.Context, req *proto.TodoReq) (res *proto.TodoRes, err error) {
-	collc := db.Collc(collectionName)
-
 	if *req.ObjectId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "objectId is required")
 	}
@@ -63,7 +59,7 @@ func (s *Server) DeleteTodo(ctx context.Context, req *proto.TodoReq) (res *proto
 	if req.ObjectId != nil {
 		oId, _ := primitive.ObjectIDFromHex(*req.ObjectId)
 
-		isDeleted := db.DeleteTodo(collc, oId)
+		isDeleted := db.DeleteTodo(s.dbCollection, oId)
 
 		if isDeleted {
 			return &proto.TodoRes{
@@ -79,13 +75,11 @@ func (s *Server) DeleteTodo(ctx context.Context, req *proto.TodoReq) (res *proto
 }
 
 func (s *Server) InsertTodo(ctx context.Context, req *proto.TodoReq) (res *proto.TodoRes, err error) {
-	collc := db.Collc(collectionName)
-
 	if req.Body == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "body is empty")
 	}
 
-	isInserted := db.InsertTodo(collc, req.Body)
+	isInserted := db.InsertTodo(s.dbCollection, req.Body)
 
 	if isInserted {
 		return &proto.TodoRes{
@@ -104,7 +98,9 @@ func main() {
 
 	s := grpc.NewServer()
 
-	proto.RegisterTodoServiceServer(s, &Server{})
+	proto.RegisterTodoServiceServer(s, &Server{
+		dbCollection: db.Collc("halan"),
+	})
 
 	log.Printf("server listening at %v", listener.Addr())
 
