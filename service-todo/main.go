@@ -106,7 +106,7 @@ func (s *Server) InsertTodo(ctx context.Context, req *proto.InsertTodoReq) (res 
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		userId := md["userid"]
 
-		test, err := db.Transfer(s.client, s.userCollection, "67fbd5befc7128b743d265b6", "67fbd5d9fc7128b743d265b7", 100)
+		_, err := db.Transfer(s.client, s.userCollection, "67fbd5befc7128b743d265b6", "67fbd5d9fc7128b743d265b7", 100)
 
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
@@ -233,6 +233,7 @@ func main() {
 	s := grpc.NewServer()
 
 	mongoClient := db.Conn()
+
 	proto.RegisterTodoServiceServer(s, &Server{
 		client:            mongoClient,
 		dbCollection:      db.Collc(mongoClient, "halan"),
@@ -241,7 +242,6 @@ func main() {
 	})
 
 	log.Printf("server listening at %v", listener.Addr())
-
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
