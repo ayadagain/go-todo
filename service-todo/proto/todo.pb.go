@@ -21,366 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type InsertTodoReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          string                 `protobuf:"bytes,1,opt,name=Data,proto3" json:"Data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InsertTodoReq) Reset() {
-	*x = InsertTodoReq{}
-	mi := &file_todo_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InsertTodoReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InsertTodoReq) ProtoMessage() {}
-
-func (x *InsertTodoReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InsertTodoReq.ProtoReflect.Descriptor instead.
-func (*InsertTodoReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *InsertTodoReq) GetData() string {
-	if x != nil {
-		return x.Data
-	}
-	return ""
-}
-
-type InsertTodoRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          string                 `protobuf:"bytes,1,opt,name=Data,proto3" json:"Data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InsertTodoRes) Reset() {
-	*x = InsertTodoRes{}
-	mi := &file_todo_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InsertTodoRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InsertTodoRes) ProtoMessage() {}
-
-func (x *InsertTodoRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InsertTodoRes.ProtoReflect.Descriptor instead.
-func (*InsertTodoRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *InsertTodoRes) GetData() string {
-	if x != nil {
-		return x.Data
-	}
-	return ""
-}
-
-type DeleteTodoReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjectId      string                 `protobuf:"bytes,1,opt,name=ObjectId,proto3" json:"ObjectId,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTodoReq) Reset() {
-	*x = DeleteTodoReq{}
-	mi := &file_todo_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTodoReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTodoReq) ProtoMessage() {}
-
-func (x *DeleteTodoReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTodoReq.ProtoReflect.Descriptor instead.
-func (*DeleteTodoReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *DeleteTodoReq) GetObjectId() string {
-	if x != nil {
-		return x.ObjectId
-	}
-	return ""
-}
-
-type DeleteTodoRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteTodoRes) Reset() {
-	*x = DeleteTodoRes{}
-	mi := &file_todo_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteTodoRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteTodoRes) ProtoMessage() {}
-
-func (x *DeleteTodoRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteTodoRes.ProtoReflect.Descriptor instead.
-func (*DeleteTodoRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{3}
-}
-
-type GetTodoReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjectId      string                 `protobuf:"bytes,1,opt,name=ObjectId,proto3" json:"ObjectId,omitempty"`
-	CreatedBy     string                 `protobuf:"bytes,2,opt,name=CreatedBy,proto3" json:"CreatedBy,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTodoReq) Reset() {
-	*x = GetTodoReq{}
-	mi := &file_todo_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTodoReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTodoReq) ProtoMessage() {}
-
-func (x *GetTodoReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTodoReq.ProtoReflect.Descriptor instead.
-func (*GetTodoReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetTodoReq) GetObjectId() string {
-	if x != nil {
-		return x.ObjectId
-	}
-	return ""
-}
-
-func (x *GetTodoReq) GetCreatedBy() string {
-	if x != nil {
-		return x.CreatedBy
-	}
-	return ""
-}
-
-type GetTodoRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjectId      string                 `protobuf:"bytes,1,opt,name=ObjectId,proto3" json:"ObjectId,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
-	CreatedBy     string                 `protobuf:"bytes,3,opt,name=CreatedBy,proto3" json:"CreatedBy,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTodoRes) Reset() {
-	*x = GetTodoRes{}
-	mi := &file_todo_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTodoRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTodoRes) ProtoMessage() {}
-
-func (x *GetTodoRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTodoRes.ProtoReflect.Descriptor instead.
-func (*GetTodoRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetTodoRes) GetObjectId() string {
-	if x != nil {
-		return x.ObjectId
-	}
-	return ""
-}
-
-func (x *GetTodoRes) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-func (x *GetTodoRes) GetCreatedBy() string {
-	if x != nil {
-		return x.CreatedBy
-	}
-	return ""
-}
-
-type GetTodosReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTodosReq) Reset() {
-	*x = GetTodosReq{}
-	mi := &file_todo_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTodosReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTodosReq) ProtoMessage() {}
-
-func (x *GetTodosReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTodosReq.ProtoReflect.Descriptor instead.
-func (*GetTodosReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{6}
-}
-
-type GetTodosRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Todos         []*GetTodoRes          `protobuf:"bytes,1,rep,name=Todos,proto3" json:"Todos,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTodosRes) Reset() {
-	*x = GetTodosRes{}
-	mi := &file_todo_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTodosRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTodosRes) ProtoMessage() {}
-
-func (x *GetTodosRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTodosRes.ProtoReflect.Descriptor instead.
-func (*GetTodosRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *GetTodosRes) GetTodos() []*GetTodoRes {
-	if x != nil {
-		return x.Todos
-	}
-	return nil
-}
-
 type DepositReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Amount        float32                `protobuf:"fixed32,1,opt,name=Amount,proto3" json:"Amount,omitempty"`
@@ -390,7 +30,7 @@ type DepositReq struct {
 
 func (x *DepositReq) Reset() {
 	*x = DepositReq{}
-	mi := &file_todo_proto_msgTypes[8]
+	mi := &file_todo_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -402,7 +42,7 @@ func (x *DepositReq) String() string {
 func (*DepositReq) ProtoMessage() {}
 
 func (x *DepositReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[8]
+	mi := &file_todo_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -415,7 +55,7 @@ func (x *DepositReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DepositReq.ProtoReflect.Descriptor instead.
 func (*DepositReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{8}
+	return file_todo_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *DepositReq) GetAmount() float32 {
@@ -435,7 +75,7 @@ type DepositRes struct {
 
 func (x *DepositRes) Reset() {
 	*x = DepositRes{}
-	mi := &file_todo_proto_msgTypes[9]
+	mi := &file_todo_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -447,7 +87,7 @@ func (x *DepositRes) String() string {
 func (*DepositRes) ProtoMessage() {}
 
 func (x *DepositRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[9]
+	mi := &file_todo_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -460,7 +100,7 @@ func (x *DepositRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DepositRes.ProtoReflect.Descriptor instead.
 func (*DepositRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{9}
+	return file_todo_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *DepositRes) GetStatus() int32 {
@@ -486,7 +126,7 @@ type WithdrawReq struct {
 
 func (x *WithdrawReq) Reset() {
 	*x = WithdrawReq{}
-	mi := &file_todo_proto_msgTypes[10]
+	mi := &file_todo_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -498,7 +138,7 @@ func (x *WithdrawReq) String() string {
 func (*WithdrawReq) ProtoMessage() {}
 
 func (x *WithdrawReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[10]
+	mi := &file_todo_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -511,7 +151,7 @@ func (x *WithdrawReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WithdrawReq.ProtoReflect.Descriptor instead.
 func (*WithdrawReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{10}
+	return file_todo_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *WithdrawReq) GetAmount() float32 {
@@ -531,7 +171,7 @@ type WithdrawRes struct {
 
 func (x *WithdrawRes) Reset() {
 	*x = WithdrawRes{}
-	mi := &file_todo_proto_msgTypes[11]
+	mi := &file_todo_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -543,7 +183,7 @@ func (x *WithdrawRes) String() string {
 func (*WithdrawRes) ProtoMessage() {}
 
 func (x *WithdrawRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[11]
+	mi := &file_todo_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -556,7 +196,7 @@ func (x *WithdrawRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WithdrawRes.ProtoReflect.Descriptor instead.
 func (*WithdrawRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{11}
+	return file_todo_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *WithdrawRes) GetStatus() int32 {
@@ -583,7 +223,7 @@ type TransferReq struct {
 
 func (x *TransferReq) Reset() {
 	*x = TransferReq{}
-	mi := &file_todo_proto_msgTypes[12]
+	mi := &file_todo_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -595,7 +235,7 @@ func (x *TransferReq) String() string {
 func (*TransferReq) ProtoMessage() {}
 
 func (x *TransferReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[12]
+	mi := &file_todo_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -608,7 +248,7 @@ func (x *TransferReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferReq.ProtoReflect.Descriptor instead.
 func (*TransferReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{12}
+	return file_todo_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TransferReq) GetAmount() float32 {
@@ -635,7 +275,7 @@ type TransferRes struct {
 
 func (x *TransferRes) Reset() {
 	*x = TransferRes{}
-	mi := &file_todo_proto_msgTypes[13]
+	mi := &file_todo_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -647,7 +287,7 @@ func (x *TransferRes) String() string {
 func (*TransferRes) ProtoMessage() {}
 
 func (x *TransferRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[13]
+	mi := &file_todo_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -660,7 +300,7 @@ func (x *TransferRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferRes.ProtoReflect.Descriptor instead.
 func (*TransferRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{13}
+	return file_todo_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TransferRes) GetStatus() int32 {
@@ -682,26 +322,7 @@ var File_todo_proto protoreflect.FileDescriptor
 const file_todo_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"todo.proto\x12\x05proto\"#\n" +
-	"\rInsertTodoReq\x12\x12\n" +
-	"\x04Data\x18\x01 \x01(\tR\x04Data\"#\n" +
-	"\rInsertTodoRes\x12\x12\n" +
-	"\x04Data\x18\x01 \x01(\tR\x04Data\"+\n" +
-	"\rDeleteTodoReq\x12\x1a\n" +
-	"\bObjectId\x18\x01 \x01(\tR\bObjectId\"\x0f\n" +
-	"\rDeleteTodoRes\"F\n" +
-	"\n" +
-	"GetTodoReq\x12\x1a\n" +
-	"\bObjectId\x18\x01 \x01(\tR\bObjectId\x12\x1c\n" +
-	"\tCreatedBy\x18\x02 \x01(\tR\tCreatedBy\"`\n" +
-	"\n" +
-	"GetTodoRes\x12\x1a\n" +
-	"\bObjectId\x18\x01 \x01(\tR\bObjectId\x12\x18\n" +
-	"\aMessage\x18\x02 \x01(\tR\aMessage\x12\x1c\n" +
-	"\tCreatedBy\x18\x03 \x01(\tR\tCreatedBy\"\r\n" +
-	"\vGetTodosReq\"6\n" +
-	"\vGetTodosRes\x12'\n" +
-	"\x05Todos\x18\x01 \x03(\v2\x11.proto.GetTodoResR\x05Todos\"$\n" +
+	"todo.proto\x12\x05proto\"$\n" +
 	"\n" +
 	"DepositReq\x12\x16\n" +
 	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\">\n" +
@@ -719,14 +340,8 @@ const file_todo_proto_rawDesc = "" +
 	"\x02To\x18\x02 \x01(\tR\x02To\"?\n" +
 	"\vTransferRes\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
-	"\aMessage\x18\x02 \x01(\tR\aMessage2\x8d\x03\n" +
-	"\vTodoService\x12:\n" +
-	"\n" +
-	"InsertTodo\x12\x14.proto.InsertTodoReq\x1a\x14.proto.InsertTodoRes\"\x00\x12:\n" +
-	"\n" +
-	"DeleteTodo\x12\x14.proto.DeleteTodoReq\x1a\x14.proto.DeleteTodoRes\"\x00\x121\n" +
-	"\aGetTodo\x12\x11.proto.GetTodoReq\x1a\x11.proto.GetTodoRes\"\x00\x124\n" +
-	"\bGetTodos\x12\x12.proto.GetTodosReq\x1a\x12.proto.GetTodosRes\"\x00\x121\n" +
+	"\aMessage\x18\x02 \x01(\tR\aMessage2\xac\x01\n" +
+	"\vTodoService\x121\n" +
 	"\aDeposit\x12\x11.proto.DepositReq\x1a\x11.proto.DepositRes\"\x00\x124\n" +
 	"\bWithdraw\x12\x12.proto.WithdrawReq\x1a\x12.proto.WithdrawRes\"\x00\x124\n" +
 	"\bTransfer\x12\x12.proto.TransferReq\x1a\x12.proto.TransferRes\"\x00B\tZ\a/;protob\x06proto3"
@@ -743,44 +358,27 @@ func file_todo_proto_rawDescGZIP() []byte {
 	return file_todo_proto_rawDescData
 }
 
-var file_todo_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_todo_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_todo_proto_goTypes = []any{
-	(*InsertTodoReq)(nil), // 0: proto.InsertTodoReq
-	(*InsertTodoRes)(nil), // 1: proto.InsertTodoRes
-	(*DeleteTodoReq)(nil), // 2: proto.DeleteTodoReq
-	(*DeleteTodoRes)(nil), // 3: proto.DeleteTodoRes
-	(*GetTodoReq)(nil),    // 4: proto.GetTodoReq
-	(*GetTodoRes)(nil),    // 5: proto.GetTodoRes
-	(*GetTodosReq)(nil),   // 6: proto.GetTodosReq
-	(*GetTodosRes)(nil),   // 7: proto.GetTodosRes
-	(*DepositReq)(nil),    // 8: proto.DepositReq
-	(*DepositRes)(nil),    // 9: proto.DepositRes
-	(*WithdrawReq)(nil),   // 10: proto.WithdrawReq
-	(*WithdrawRes)(nil),   // 11: proto.WithdrawRes
-	(*TransferReq)(nil),   // 12: proto.TransferReq
-	(*TransferRes)(nil),   // 13: proto.TransferRes
+	(*DepositReq)(nil),  // 0: proto.DepositReq
+	(*DepositRes)(nil),  // 1: proto.DepositRes
+	(*WithdrawReq)(nil), // 2: proto.WithdrawReq
+	(*WithdrawRes)(nil), // 3: proto.WithdrawRes
+	(*TransferReq)(nil), // 4: proto.TransferReq
+	(*TransferRes)(nil), // 5: proto.TransferRes
 }
 var file_todo_proto_depIdxs = []int32{
-	5,  // 0: proto.GetTodosRes.Todos:type_name -> proto.GetTodoRes
-	0,  // 1: proto.TodoService.InsertTodo:input_type -> proto.InsertTodoReq
-	2,  // 2: proto.TodoService.DeleteTodo:input_type -> proto.DeleteTodoReq
-	4,  // 3: proto.TodoService.GetTodo:input_type -> proto.GetTodoReq
-	6,  // 4: proto.TodoService.GetTodos:input_type -> proto.GetTodosReq
-	8,  // 5: proto.TodoService.Deposit:input_type -> proto.DepositReq
-	10, // 6: proto.TodoService.Withdraw:input_type -> proto.WithdrawReq
-	12, // 7: proto.TodoService.Transfer:input_type -> proto.TransferReq
-	1,  // 8: proto.TodoService.InsertTodo:output_type -> proto.InsertTodoRes
-	3,  // 9: proto.TodoService.DeleteTodo:output_type -> proto.DeleteTodoRes
-	5,  // 10: proto.TodoService.GetTodo:output_type -> proto.GetTodoRes
-	7,  // 11: proto.TodoService.GetTodos:output_type -> proto.GetTodosRes
-	9,  // 12: proto.TodoService.Deposit:output_type -> proto.DepositRes
-	11, // 13: proto.TodoService.Withdraw:output_type -> proto.WithdrawRes
-	13, // 14: proto.TodoService.Transfer:output_type -> proto.TransferRes
-	8,  // [8:15] is the sub-list for method output_type
-	1,  // [1:8] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	0, // 0: proto.TodoService.Deposit:input_type -> proto.DepositReq
+	2, // 1: proto.TodoService.Withdraw:input_type -> proto.WithdrawReq
+	4, // 2: proto.TodoService.Transfer:input_type -> proto.TransferReq
+	1, // 3: proto.TodoService.Deposit:output_type -> proto.DepositRes
+	3, // 4: proto.TodoService.Withdraw:output_type -> proto.WithdrawRes
+	5, // 5: proto.TodoService.Transfer:output_type -> proto.TransferRes
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_todo_proto_init() }
@@ -794,7 +392,7 @@ func file_todo_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_todo_proto_rawDesc), len(file_todo_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -19,23 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TodoService_InsertTodo_FullMethodName = "/proto.TodoService/InsertTodo"
-	TodoService_DeleteTodo_FullMethodName = "/proto.TodoService/DeleteTodo"
-	TodoService_GetTodo_FullMethodName    = "/proto.TodoService/GetTodo"
-	TodoService_GetTodos_FullMethodName   = "/proto.TodoService/GetTodos"
-	TodoService_Deposit_FullMethodName    = "/proto.TodoService/Deposit"
-	TodoService_Withdraw_FullMethodName   = "/proto.TodoService/Withdraw"
-	TodoService_Transfer_FullMethodName   = "/proto.TodoService/Transfer"
+	TodoService_Deposit_FullMethodName  = "/proto.TodoService/Deposit"
+	TodoService_Withdraw_FullMethodName = "/proto.TodoService/Withdraw"
+	TodoService_Transfer_FullMethodName = "/proto.TodoService/Transfer"
 )
 
 // TodoServiceClient is the client API for TodoService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TodoServiceClient interface {
-	InsertTodo(ctx context.Context, in *InsertTodoReq, opts ...grpc.CallOption) (*InsertTodoRes, error)
-	DeleteTodo(ctx context.Context, in *DeleteTodoReq, opts ...grpc.CallOption) (*DeleteTodoRes, error)
-	GetTodo(ctx context.Context, in *GetTodoReq, opts ...grpc.CallOption) (*GetTodoRes, error)
-	GetTodos(ctx context.Context, in *GetTodosReq, opts ...grpc.CallOption) (*GetTodosRes, error)
 	Deposit(ctx context.Context, in *DepositReq, opts ...grpc.CallOption) (*DepositRes, error)
 	Withdraw(ctx context.Context, in *WithdrawReq, opts ...grpc.CallOption) (*WithdrawRes, error)
 	Transfer(ctx context.Context, in *TransferReq, opts ...grpc.CallOption) (*TransferRes, error)
@@ -47,46 +39,6 @@ type todoServiceClient struct {
 
 func NewTodoServiceClient(cc grpc.ClientConnInterface) TodoServiceClient {
 	return &todoServiceClient{cc}
-}
-
-func (c *todoServiceClient) InsertTodo(ctx context.Context, in *InsertTodoReq, opts ...grpc.CallOption) (*InsertTodoRes, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(InsertTodoRes)
-	err := c.cc.Invoke(ctx, TodoService_InsertTodo_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *todoServiceClient) DeleteTodo(ctx context.Context, in *DeleteTodoReq, opts ...grpc.CallOption) (*DeleteTodoRes, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteTodoRes)
-	err := c.cc.Invoke(ctx, TodoService_DeleteTodo_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *todoServiceClient) GetTodo(ctx context.Context, in *GetTodoReq, opts ...grpc.CallOption) (*GetTodoRes, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetTodoRes)
-	err := c.cc.Invoke(ctx, TodoService_GetTodo_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *todoServiceClient) GetTodos(ctx context.Context, in *GetTodosReq, opts ...grpc.CallOption) (*GetTodosRes, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetTodosRes)
-	err := c.cc.Invoke(ctx, TodoService_GetTodos_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *todoServiceClient) Deposit(ctx context.Context, in *DepositReq, opts ...grpc.CallOption) (*DepositRes, error) {
@@ -123,10 +75,6 @@ func (c *todoServiceClient) Transfer(ctx context.Context, in *TransferReq, opts 
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility.
 type TodoServiceServer interface {
-	InsertTodo(context.Context, *InsertTodoReq) (*InsertTodoRes, error)
-	DeleteTodo(context.Context, *DeleteTodoReq) (*DeleteTodoRes, error)
-	GetTodo(context.Context, *GetTodoReq) (*GetTodoRes, error)
-	GetTodos(context.Context, *GetTodosReq) (*GetTodosRes, error)
 	Deposit(context.Context, *DepositReq) (*DepositRes, error)
 	Withdraw(context.Context, *WithdrawReq) (*WithdrawRes, error)
 	Transfer(context.Context, *TransferReq) (*TransferRes, error)
@@ -140,18 +88,6 @@ type TodoServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTodoServiceServer struct{}
 
-func (UnimplementedTodoServiceServer) InsertTodo(context.Context, *InsertTodoReq) (*InsertTodoRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InsertTodo not implemented")
-}
-func (UnimplementedTodoServiceServer) DeleteTodo(context.Context, *DeleteTodoReq) (*DeleteTodoRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteTodo not implemented")
-}
-func (UnimplementedTodoServiceServer) GetTodo(context.Context, *GetTodoReq) (*GetTodoRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTodo not implemented")
-}
-func (UnimplementedTodoServiceServer) GetTodos(context.Context, *GetTodosReq) (*GetTodosRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTodos not implemented")
-}
 func (UnimplementedTodoServiceServer) Deposit(context.Context, *DepositReq) (*DepositRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deposit not implemented")
 }
@@ -180,78 +116,6 @@ func RegisterTodoServiceServer(s grpc.ServiceRegistrar, srv TodoServiceServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&TodoService_ServiceDesc, srv)
-}
-
-func _TodoService_InsertTodo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InsertTodoReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoServiceServer).InsertTodo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoService_InsertTodo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoServiceServer).InsertTodo(ctx, req.(*InsertTodoReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TodoService_DeleteTodo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteTodoReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoServiceServer).DeleteTodo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoService_DeleteTodo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoServiceServer).DeleteTodo(ctx, req.(*DeleteTodoReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TodoService_GetTodo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTodoReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoServiceServer).GetTodo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoService_GetTodo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoServiceServer).GetTodo(ctx, req.(*GetTodoReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _TodoService_GetTodos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTodosReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TodoServiceServer).GetTodos(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TodoService_GetTodos_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoServiceServer).GetTodos(ctx, req.(*GetTodosReq))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _TodoService_Deposit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -315,22 +179,6 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.TodoService",
 	HandlerType: (*TodoServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "InsertTodo",
-			Handler:    _TodoService_InsertTodo_Handler,
-		},
-		{
-			MethodName: "DeleteTodo",
-			Handler:    _TodoService_DeleteTodo_Handler,
-		},
-		{
-			MethodName: "GetTodo",
-			Handler:    _TodoService_GetTodo_Handler,
-		},
-		{
-			MethodName: "GetTodos",
-			Handler:    _TodoService_GetTodos_Handler,
-		},
 		{
 			MethodName: "Deposit",
 			Handler:    _TodoService_Deposit_Handler,

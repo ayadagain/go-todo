@@ -2,37 +2,6 @@ syntax = 'proto3';
 package proto;
 option go_package = '/;proto';
 
-message InsertTodoReq {
-  string Data = 1;
-}
-
-message InsertTodoRes {
-  string Data = 1;
-}
-
-message DeleteTodoReq {
-  string ObjectId = 1;
-}
-
-message DeleteTodoRes {}
-
-message GetTodoReq {
-  string ObjectId = 1;
-  string CreatedBy = 2;
-}
-
-message GetTodoRes {
-  string ObjectId = 1;
-  string Message = 2;
-  string CreatedBy = 3;
-}
-
-message GetTodosReq {}
-
-message GetTodosRes {
-  repeated GetTodoRes Todos = 1;
-}
-
 message DepositReq {
   float Amount = 1;
 }
@@ -61,10 +30,6 @@ message TransferRes {
 }
 
 service TodoService {
-  rpc InsertTodo(InsertTodoReq) returns (InsertTodoRes) {}
-  rpc DeleteTodo(DeleteTodoReq) returns (DeleteTodoRes) {}
-  rpc GetTodo(GetTodoReq) returns (GetTodoRes) {}
-  rpc GetTodos(GetTodosReq) returns (GetTodosRes) {}
   rpc Deposit(DepositReq) returns (DepositRes) {}
   rpc Withdraw(WithdrawReq) returns (WithdrawRes) {}
   rpc Transfer(TransferReq) returns (TransferRes) {}

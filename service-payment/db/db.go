@@ -71,59 +71,6 @@ func Collc(client *mongo.Client, collcName string) *mongo.Collection {
 	return collec
 }
 
-func FilterTodos(collection *mongo.Collection, query *bson.D) []TodoModel {
-	if query == nil {
-		query = &bson.D{}
-	}
-
-	cursor, err := collection.Find(context.Background(), query)
-
-	if err != nil {
-		fmt.Println("Something went wrong: ", err)
-		return nil
-	}
-
-	var result []TodoModel
-
-	if err = cursor.All(context.Background(), &result); err != nil {
-		fmt.Println("Something went wrong: ", err)
-		return nil
-	}
-
-	return result
-}
-
-func InsertTodo(collection *mongo.Collection, data any, userId string) bool {
-	_, err := collection.InsertOne(context.Background(), &TodoModel{
-		Data:      data.(string),
-		CreatedBy: userId,
-	})
-
-	if err != nil {
-		fmt.Println("[DB] Something went wrong: ", err)
-		return false
-	}
-
-	return true
-}
-
-func DeleteTodo(collection *mongo.Collection, entryId primitive.ObjectID) bool {
-	cursor, err := collection.DeleteOne(context.TODO(), bson.D{
-		{"_id", entryId},
-	})
-
-	if err != nil {
-		fmt.Println("Something went wrong: ", err)
-		return false
-	}
-
-	if cursor.DeletedCount > 0 {
-		return true
-	}
-
-	return false
-}
-
 func GetBalance(collection *mongo.Collection, userId string) float64 {
 	objectID, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
