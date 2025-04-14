@@ -1,131 +1,27 @@
 package main
 
 import (
-	"assm/service-todo/db"
+	paymentProto "assm/service-payment/proto"
+	hgrpc "assm/service-todo/grpc"
 	"assm/service-todo/proto"
 	"context"
 	"fmt"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
+	"os"
 )
 
 type Server struct {
 	proto.UnimplementedTodoServiceServer
-	client            *mongo.Client
-	dbCollection      *mongo.Collection
-	paymentCollection *mongo.Collection
-	userCollection    *mongo.Collection
-}
-
-func (s *Server) GetTodo(ctx context.Context, req *proto.GetTodoReq) (res *proto.GetTodoRes, err error) {
-	var qry *bson.D
-
-	if req.ObjectId == "" {
-		return nil, status.Error(codes.InvalidArgument, "ObjectId is required")
-	}
-
-	oId, err := primitive.ObjectIDFromHex(req.ObjectId)
-
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	qry = &bson.D{{
-		"_id", oId,
-	}}
-
-	data := db.FilterTodos(s.dbCollection, qry)
-
-	if len(data) == 0 || data == nil {
-		return nil, status.Errorf(codes.NotFound, "not found")
-	}
-
-	resp := data[0]
-
-	protoReq := &proto.GetTodoRes{
-		ObjectId:  resp.ID.Hex(),
-		Message:   resp.Data,
-		CreatedBy: resp.CreatedBy,
-	}
-	return protoReq, nil
-}
-
-func (s *Server) GetTodos(ctx context.Context, req *proto.GetTodosReq) (res *proto.GetTodosRes, err error) {
-	var pp []*proto.GetTodoRes
-	var qry *bson.D
-
-	data := db.FilterTodos(s.dbCollection, qry)
-
-	for _, t := range data {
-		_id := t.ID.Hex()
-
-		pp = append(pp, &proto.GetTodoRes{
-			Message:   t.Data,
-			ObjectId:  _id,
-			CreatedBy: t.CreatedBy,
-		})
-	}
-
-	protoReq := &proto.GetTodosRes{Todos: pp}
-	return protoReq, nil
-}
-
-func (s *Server) DeleteTodo(ctx context.Context, req *proto.DeleteTodoReq) (res *proto.DeleteTodoRes, err error) {
-	if req.ObjectId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "objectId is required")
-	}
-
-	if req.ObjectId != "" {
-		oId, _ := primitive.ObjectIDFromHex(req.ObjectId)
-
-		isDeleted := db.DeleteTodo(s.dbCollection, oId)
-
-		if isDeleted {
-			return &proto.DeleteTodoRes{}, nil
-		}
-
-		return nil, status.Errorf(codes.NotFound, "not found")
-
-	}
-
-	return nil, status.Errorf(codes.NotFound, "Something went wrong")
-}
-
-func (s *Server) InsertTodo(ctx context.Context, req *proto.InsertTodoReq) (res *proto.InsertTodoRes, err error) {
-	if req.Data == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "body is empty")
-	}
-
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		userId := md["userid"]
-
-		_, err := db.Transfer(s.client, s.userCollection, "67fbd5befc7128b743d265b6", "67fbd5d9fc7128b743d265b7", 100)
-
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
-
-		if len(userId) == 0 {
-			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
-		}
-
-		isInserted := db.InsertTodo(s.dbCollection, req.Data, userId[0])
-
-		if isInserted {
-			return &proto.InsertTodoRes{
-				Data: req.Data,
-			}, nil
-		}
-	}
-
-	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+	kafka      *kafka.Producer
+	kTopic     string
+	grpcClient paymentProto.PaymentServiceClient
 }
 
 func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *proto.WithdrawRes, err error) {
@@ -140,23 +36,47 @@ func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *pro
 			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
 		}
 
-		existingBalance := db.GetBalance(s.userCollection, userId[0])
+		md := metadata.New(map[string]string{"userId": userId[0]})
+		ctxWithMd := metadata.NewOutgoingContext(context.Background(), md)
 
-		if existingBalance < float64(req.Amount) {
-			return nil, status.Errorf(codes.NotFound, "Balance is insufficient")
+		existingBalance, err := s.grpcClient.BalanceInquiry(ctxWithMd, &paymentProto.BalanceReq{})
+
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to get balance for user: %v", err)
 		}
 
-		insertOp := db.EditBalance(s.client, s.userCollection, userId[0], req.Amount*-1)
-
-		if insertOp {
-			return &proto.WithdrawRes{
-				Status:  1,
-				Message: fmt.Sprintf("You withdrew $%.2f from your balance. Your balance now is $%.2f", req.Amount, float32(existingBalance)-req.Amount),
-			}, nil
+		if existingBalance.Balance < req.Amount {
+			return nil, status.Errorf(codes.InvalidArgument, "insufficient balance")
 		}
 
-		return nil, status.Errorf(codes.NotFound, "Something went wrong")
+		kMessage := bson.D{
+			{Key: "debtor", Value: userId[0]},
+			{Key: "amount", Value: req.Amount},
+			{Key: "creditor", Value: nil},
+			{Key: "event", Value: "Withdrawal"},
+		}
 
+		kMessageBytes, err := bson.Marshal(kMessage)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "something went wrong")
+		}
+
+		err = s.kafka.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{
+				Topic:     &s.kTopic,
+				Partition: kafka.PartitionAny,
+			},
+			Value: kMessageBytes,
+		}, nil)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto.WithdrawRes{
+			Status:  1,
+			Message: fmt.Sprintf("You withdrew $%.2f from your balance. Your balance now is $%.2f", req.Amount, existingBalance.Balance-req.Amount),
+		}, nil
 	}
 
 	return nil, status.Errorf(codes.NotFound, "Something went wrong")
@@ -174,17 +94,34 @@ func (s *Server) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto
 			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
 		}
 
-		insertOp := db.EditBalance(s.client, s.userCollection, userId[0], req.Amount)
-
-		if insertOp {
-			return &proto.DepositRes{
-				Status:  1,
-				Message: fmt.Sprintf("You deposited $%.2f in your balance", req.Amount),
-			}, nil
+		kMessage := bson.D{
+			{Key: "debtor", Value: nil},
+			{Key: "amount", Value: req.Amount},
+			{Key: "creditor", Value: userId[0]},
+			{Key: "event", Value: "Deposit"},
 		}
 
-		return nil, status.Errorf(codes.NotFound, "Something went wrong")
+		kMessageBytes, err := bson.Marshal(kMessage)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "something went wrong")
+		}
 
+		err = s.kafka.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{
+				Topic:     &s.kTopic,
+				Partition: kafka.PartitionAny,
+			},
+			Value: kMessageBytes,
+		}, nil)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto.DepositRes{
+			Status:  1,
+			Message: fmt.Sprintf("You deposited $%.2f in your balance", req.Amount),
+		}, nil
 	}
 
 	return nil, status.Errorf(codes.NotFound, "Something went wrong")
@@ -202,25 +139,47 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
 		}
 
-		insertOp, err := db.Transfer(s.client, s.userCollection, userId[0], req.To, req.Amount)
+		//insertOp, err := db.Transfer(s.client, s.userCollection, userId[0], req.To, req.Amount)
+
+		md := metadata.New(map[string]string{"userId": userId[0]})
+		ctxWithMd := metadata.NewOutgoingContext(context.Background(), md)
+
+		existingBalance, err := s.grpcClient.BalanceInquiry(ctxWithMd, &paymentProto.BalanceReq{})
 
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
-		if insertOp {
-			return &proto.TransferRes{
-				Status:  1,
-				Message: fmt.Sprintf("You have transferred $%.2f successfully.", req.Amount),
-			}, nil
+		if existingBalance.Balance < req.Amount {
+			return nil, status.Errorf(codes.InvalidArgument, "insufficient balance")
 		}
 
-		return nil, status.Errorf(codes.NotFound, "Something went wrong")
+		kMessage := bson.D{
+			{Key: "debtor", Value: userId[0]},
+			{Key: "amount", Value: req.Amount},
+			{Key: "creditor", Value: req.To},
+			{Key: "event", Value: "P2PTransfer"},
+		}
+
+		kMessageBytes, err := bson.Marshal(kMessage)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "something went wrong")
+		}
+
+		err = s.kafka.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{
+				Topic:     &s.kTopic,
+				Partition: kafka.PartitionAny,
+			},
+			Value: kMessageBytes,
+		}, nil)
+
+		return &proto.TransferRes{
+			Status:  1,
+			Message: fmt.Sprintf("You have transferred $%.2f successfully.", req.Amount),
+		}, nil
 	}
-
 	return nil, status.Errorf(codes.NotFound, "Something went wrong")
-
-	return &proto.TransferRes{}, nil
 }
 
 func main() {
@@ -232,13 +191,33 @@ func main() {
 
 	s := grpc.NewServer()
 
-	mongoClient := db.Conn()
+	kafkaProducer, err := kafka.NewProducer(&kafka.ConfigMap{
+		"bootstrap.servers": "localhost",
+	})
+
+	if err != nil {
+		os.Exit(1)
+	}
+
+	defer kafkaProducer.Close()
+
+	go func() {
+		for e := range kafkaProducer.Events() {
+			switch ev := (e).(type) {
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
+				} else {
+					fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
+				}
+			}
+		}
+	}()
 
 	proto.RegisterTodoServiceServer(s, &Server{
-		client:            mongoClient,
-		dbCollection:      db.Collc(mongoClient, "halan"),
-		paymentCollection: db.Collc(mongoClient, "payments"),
-		userCollection:    db.Collc(mongoClient, "users"),
+		kafka:      kafkaProducer,
+		kTopic:     "halan",
+		grpcClient: hgrpc.GrpcConn(),
 	})
 
 	log.Printf("server listening at %v", listener.Addr())

@@ -225,6 +225,17 @@ func (s *networking) withdraw(c *gin.Context) {
 		return
 	}
 
+	if postData.Amount < 0 {
+		res := &response{
+			Message: "fail",
+			Status:  http.StatusBadRequest,
+			Data:    "Cannot send negative amount",
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+	}
+
 	md := metadata.New(map[string]string{"userId": "67fbd5d9fc7128b743d265b7"})
 	ctxWithMd := metadata.NewOutgoingContext(context.Background(), md)
 
@@ -261,6 +272,17 @@ func (s *networking) deposit(c *gin.Context) {
 			Message: "fail",
 			Status:  http.StatusBadRequest,
 			Data:    err.Error(),
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+	}
+
+	if postData.Amount < 0 {
+		res := &response{
+			Message: "fail",
+			Status:  http.StatusBadRequest,
+			Data:    "Cannot send negative amount",
 		}
 
 		c.IndentedJSON(res.Status, res)

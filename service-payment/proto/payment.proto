@@ -1,0 +1,15 @@
+syntax = 'proto3';
+package proto;
+option go_package = '/;proto';
+
+message BalanceReq {
+  string UserId = 1;
+}
+
+message BalanceRes {
+  float Balance = 1;
+}
+
+service PaymentService {
+  rpc BalanceInquiry(BalanceReq) returns (BalanceRes) {}
+}
