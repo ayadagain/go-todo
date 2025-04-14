@@ -33,9 +33,39 @@ message GetTodosRes {
   repeated GetTodoRes Todos = 1;
 }
 
+message DepositReq {
+  float Amount = 1;
+}
+
+message DepositRes {
+  int32 Status = 1;
+  string Message = 2;
+}
+
+message WithdrawReq {
+  float Amount = 1;
+}
+
+message WithdrawRes {
+  int32 Status = 1;
+  string Message = 2;
+}
+
+message TransferReq {
+  float Amount = 1;
+  string To = 2;
+}
+message TransferRes {
+  int32 Status = 1;
+  string Message = 2;
+}
+
 service TodoService {
   rpc InsertTodo(InsertTodoReq) returns (InsertTodoRes) {}
   rpc DeleteTodo(DeleteTodoReq) returns (DeleteTodoRes) {}
   rpc GetTodo(GetTodoReq) returns (GetTodoRes) {}
   rpc GetTodos(GetTodosReq) returns (GetTodosRes) {}
+  rpc Deposit(DepositReq) returns (DepositRes) {}
+  rpc Withdraw(WithdrawReq) returns (WithdrawRes) {}
+  rpc Transfer(TransferReq) returns (TransferRes) {}
 }

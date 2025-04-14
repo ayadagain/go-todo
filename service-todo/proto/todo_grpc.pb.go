@@ -23,6 +23,9 @@ const (
 	TodoService_DeleteTodo_FullMethodName = "/proto.TodoService/DeleteTodo"
 	TodoService_GetTodo_FullMethodName    = "/proto.TodoService/GetTodo"
 	TodoService_GetTodos_FullMethodName   = "/proto.TodoService/GetTodos"
+	TodoService_Deposit_FullMethodName    = "/proto.TodoService/Deposit"
+	TodoService_Withdraw_FullMethodName   = "/proto.TodoService/Withdraw"
+	TodoService_Transfer_FullMethodName   = "/proto.TodoService/Transfer"
 )
 
 // TodoServiceClient is the client API for TodoService service.
@@ -33,6 +36,9 @@ type TodoServiceClient interface {
 	DeleteTodo(ctx context.Context, in *DeleteTodoReq, opts ...grpc.CallOption) (*DeleteTodoRes, error)
 	GetTodo(ctx context.Context, in *GetTodoReq, opts ...grpc.CallOption) (*GetTodoRes, error)
 	GetTodos(ctx context.Context, in *GetTodosReq, opts ...grpc.CallOption) (*GetTodosRes, error)
+	Deposit(ctx context.Context, in *DepositReq, opts ...grpc.CallOption) (*DepositRes, error)
+	Withdraw(ctx context.Context, in *WithdrawReq, opts ...grpc.CallOption) (*WithdrawRes, error)
+	Transfer(ctx context.Context, in *TransferReq, opts ...grpc.CallOption) (*TransferRes, error)
 }
 
 type todoServiceClient struct {
@@ -83,6 +89,36 @@ func (c *todoServiceClient) GetTodos(ctx context.Context, in *GetTodosReq, opts 
 	return out, nil
 }
 
+func (c *todoServiceClient) Deposit(ctx context.Context, in *DepositReq, opts ...grpc.CallOption) (*DepositRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DepositRes)
+	err := c.cc.Invoke(ctx, TodoService_Deposit_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *todoServiceClient) Withdraw(ctx context.Context, in *WithdrawReq, opts ...grpc.CallOption) (*WithdrawRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WithdrawRes)
+	err := c.cc.Invoke(ctx, TodoService_Withdraw_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *todoServiceClient) Transfer(ctx context.Context, in *TransferReq, opts ...grpc.CallOption) (*TransferRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TransferRes)
+	err := c.cc.Invoke(ctx, TodoService_Transfer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TodoServiceServer is the server API for TodoService service.
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility.
@@ -91,6 +127,9 @@ type TodoServiceServer interface {
 	DeleteTodo(context.Context, *DeleteTodoReq) (*DeleteTodoRes, error)
 	GetTodo(context.Context, *GetTodoReq) (*GetTodoRes, error)
 	GetTodos(context.Context, *GetTodosReq) (*GetTodosRes, error)
+	Deposit(context.Context, *DepositReq) (*DepositRes, error)
+	Withdraw(context.Context, *WithdrawReq) (*WithdrawRes, error)
+	Transfer(context.Context, *TransferReq) (*TransferRes, error)
 	mustEmbedUnimplementedTodoServiceServer()
 }
 
@@ -112,6 +151,15 @@ func (UnimplementedTodoServiceServer) GetTodo(context.Context, *GetTodoReq) (*Ge
 }
 func (UnimplementedTodoServiceServer) GetTodos(context.Context, *GetTodosReq) (*GetTodosRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTodos not implemented")
+}
+func (UnimplementedTodoServiceServer) Deposit(context.Context, *DepositReq) (*DepositRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Deposit not implemented")
+}
+func (UnimplementedTodoServiceServer) Withdraw(context.Context, *WithdrawReq) (*WithdrawRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Withdraw not implemented")
+}
+func (UnimplementedTodoServiceServer) Transfer(context.Context, *TransferReq) (*TransferRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Transfer not implemented")
 }
 func (UnimplementedTodoServiceServer) mustEmbedUnimplementedTodoServiceServer() {}
 func (UnimplementedTodoServiceServer) testEmbeddedByValue()                     {}
@@ -206,6 +254,60 @@ func _TodoService_GetTodos_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TodoService_Deposit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DepositReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServiceServer).Deposit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TodoService_Deposit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServiceServer).Deposit(ctx, req.(*DepositReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TodoService_Withdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServiceServer).Withdraw(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TodoService_Withdraw_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServiceServer).Withdraw(ctx, req.(*WithdrawReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TodoService_Transfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServiceServer).Transfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TodoService_Transfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServiceServer).Transfer(ctx, req.(*TransferReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TodoService_ServiceDesc is the grpc.ServiceDesc for TodoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +330,18 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTodos",
 			Handler:    _TodoService_GetTodos_Handler,
+		},
+		{
+			MethodName: "Deposit",
+			Handler:    _TodoService_Deposit_Handler,
+		},
+		{
+			MethodName: "Withdraw",
+			Handler:    _TodoService_Withdraw_Handler,
+		},
+		{
+			MethodName: "Transfer",
+			Handler:    _TodoService_Transfer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -18,7 +18,10 @@ import (
 
 type Server struct {
 	proto.UnimplementedTodoServiceServer
-	dbCollection *mongo.Collection
+	client            *mongo.Client
+	dbCollection      *mongo.Collection
+	paymentCollection *mongo.Collection
+	userCollection    *mongo.Collection
 }
 
 func (s *Server) GetTodo(ctx context.Context, req *proto.GetTodoReq) (res *proto.GetTodoRes, err error) {
@@ -59,10 +62,6 @@ func (s *Server) GetTodos(ctx context.Context, req *proto.GetTodosReq) (res *pro
 	var qry *bson.D
 
 	data := db.FilterTodos(s.dbCollection, qry)
-
-	if len(data) == 0 || data == nil {
-		return nil, status.Errorf(codes.NotFound, "not found")
-	}
 
 	for _, t := range data {
 		_id := t.ID.Hex()
@@ -107,6 +106,12 @@ func (s *Server) InsertTodo(ctx context.Context, req *proto.InsertTodoReq) (res 
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		userId := md["userid"]
 
+		test, err := db.Transfer(s.client, s.userCollection, "67fbd5befc7128b743d265b6", "67fbd5d9fc7128b743d265b7", 100)
+
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+
 		if len(userId) == 0 {
 			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
 		}
@@ -123,6 +128,101 @@ func (s *Server) InsertTodo(ctx context.Context, req *proto.InsertTodoReq) (res 
 	return nil, status.Errorf(codes.NotFound, "Something went wrong")
 }
 
+func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *proto.WithdrawRes, err error) {
+	if req.Amount == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "amount is empty")
+	}
+
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		userId := md["userid"]
+
+		if len(userId) == 0 {
+			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+		}
+
+		existingBalance := db.GetBalance(s.userCollection, userId[0])
+
+		if existingBalance < float64(req.Amount) {
+			return nil, status.Errorf(codes.NotFound, "Balance is insufficient")
+		}
+
+		insertOp := db.EditBalance(s.client, s.userCollection, userId[0], req.Amount*-1)
+
+		if insertOp {
+			return &proto.WithdrawRes{
+				Status:  1,
+				Message: fmt.Sprintf("You withdrew $%.2f from your balance. Your balance now is $%.2f", req.Amount, float32(existingBalance)-req.Amount),
+			}, nil
+		}
+
+		return nil, status.Errorf(codes.NotFound, "Something went wrong")
+
+	}
+
+	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+}
+
+func (s *Server) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto.DepositRes, err error) {
+	if req.Amount == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "amount is empty")
+	}
+
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		userId := md["userid"]
+
+		if len(userId) == 0 {
+			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+		}
+
+		insertOp := db.EditBalance(s.client, s.userCollection, userId[0], req.Amount)
+
+		if insertOp {
+			return &proto.DepositRes{
+				Status:  1,
+				Message: fmt.Sprintf("You deposited $%.2f in your balance", req.Amount),
+			}, nil
+		}
+
+		return nil, status.Errorf(codes.NotFound, "Something went wrong")
+
+	}
+
+	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+}
+
+func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *proto.TransferRes, err error) {
+	if req.Amount == 0 || req.To == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "incomplete request")
+	}
+
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		userId := md["userid"]
+
+		if len(userId) == 0 {
+			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+		}
+
+		insertOp, err := db.Transfer(s.client, s.userCollection, userId[0], req.To, req.Amount)
+
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+
+		if insertOp {
+			return &proto.TransferRes{
+				Status:  1,
+				Message: fmt.Sprintf("You have transferred $%.2f successfully.", req.Amount),
+			}, nil
+		}
+
+		return nil, status.Errorf(codes.NotFound, "Something went wrong")
+	}
+
+	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+
+	return &proto.TransferRes{}, nil
+}
+
 func main() {
 	listener, err := net.Listen("tcp", ":9000")
 
@@ -132,8 +232,12 @@ func main() {
 
 	s := grpc.NewServer()
 
+	mongoClient := db.Conn()
 	proto.RegisterTodoServiceServer(s, &Server{
-		dbCollection: db.Collc("halan"),
+		client:            mongoClient,
+		dbCollection:      db.Collc(mongoClient, "halan"),
+		paymentCollection: db.Collc(mongoClient, "payments"),
+		userCollection:    db.Collc(mongoClient, "users"),
 	})
 
 	log.Printf("server listening at %v", listener.Addr())
