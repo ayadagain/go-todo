@@ -6,9 +6,25 @@ message DepositReq {
   float Amount = 1;
 }
 
+enum FailureCode {
+  GENERAL_ERROR = 0;
+}
+
+message Failure {
+  FailureCode failureCode = 1;
+  string failureMessage = 2;
+}
+
 message DepositRes {
-  int32 Status = 1;
-  string Message = 2;
+  message Success {
+    int32 Status = 1;
+    string Message = 2;
+  }
+
+  oneof result {
+    Success success = 1;
+    Failure failure = 2;
+  }
 }
 
 message WithdrawReq {
@@ -16,8 +32,16 @@ message WithdrawReq {
 }
 
 message WithdrawRes {
-  int32 Status = 1;
-  string Message = 2;
+  message Success {
+    int32 Status = 1;
+    string Message = 2;
+  }
+
+  oneof result {
+    Success success = 1;
+    Failure failure = 2;
+  }
+
 }
 
 message TransferReq {
@@ -25,8 +49,16 @@ message TransferReq {
   string To = 2;
 }
 message TransferRes {
-  int32 Status = 1;
-  string Message = 2;
+  message Success {
+    int32 Status = 1;
+    string Message = 2;
+
+  }
+
+  oneof result {
+    Success success = 1;
+    Failure failure = 2;
+  }
 }
 
 service TodoService {

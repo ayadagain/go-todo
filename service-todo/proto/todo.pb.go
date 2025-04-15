@@ -21,6 +21,49 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type FailureCode int32
+
+const (
+	FailureCode_GENERAL_ERROR FailureCode = 0
+)
+
+// Enum value maps for FailureCode.
+var (
+	FailureCode_name = map[int32]string{
+		0: "GENERAL_ERROR",
+	}
+	FailureCode_value = map[string]int32{
+		"GENERAL_ERROR": 0,
+	}
+)
+
+func (x FailureCode) Enum() *FailureCode {
+	p := new(FailureCode)
+	*p = x
+	return p
+}
+
+func (x FailureCode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FailureCode) Descriptor() protoreflect.EnumDescriptor {
+	return file_todo_proto_enumTypes[0].Descriptor()
+}
+
+func (FailureCode) Type() protoreflect.EnumType {
+	return &file_todo_proto_enumTypes[0]
+}
+
+func (x FailureCode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FailureCode.Descriptor instead.
+func (FailureCode) EnumDescriptor() ([]byte, []int) {
+	return file_todo_proto_rawDescGZIP(), []int{0}
+}
+
 type DepositReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Amount        float32                `protobuf:"fixed32,1,opt,name=Amount,proto3" json:"Amount,omitempty"`
@@ -65,17 +108,72 @@ func (x *DepositReq) GetAmount() float32 {
 	return 0
 }
 
+type Failure struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	FailureCode    FailureCode            `protobuf:"varint,1,opt,name=failureCode,proto3,enum=proto.FailureCode" json:"failureCode,omitempty"`
+	FailureMessage string                 `protobuf:"bytes,2,opt,name=failureMessage,proto3" json:"failureMessage,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *Failure) Reset() {
+	*x = Failure{}
+	mi := &file_todo_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Failure) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Failure) ProtoMessage() {}
+
+func (x *Failure) ProtoReflect() protoreflect.Message {
+	mi := &file_todo_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Failure.ProtoReflect.Descriptor instead.
+func (*Failure) Descriptor() ([]byte, []int) {
+	return file_todo_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Failure) GetFailureCode() FailureCode {
+	if x != nil {
+		return x.FailureCode
+	}
+	return FailureCode_GENERAL_ERROR
+}
+
+func (x *Failure) GetFailureMessage() string {
+	if x != nil {
+		return x.FailureMessage
+	}
+	return ""
+}
+
 type DepositRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Result:
+	//
+	//	*DepositRes_Success_
+	//	*DepositRes_Failure
+	Result        isDepositRes_Result `protobuf_oneof:"result"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DepositRes) Reset() {
 	*x = DepositRes{}
-	mi := &file_todo_proto_msgTypes[1]
+	mi := &file_todo_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +185,7 @@ func (x *DepositRes) String() string {
 func (*DepositRes) ProtoMessage() {}
 
 func (x *DepositRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[1]
+	mi := &file_todo_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,22 +198,49 @@ func (x *DepositRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DepositRes.ProtoReflect.Descriptor instead.
 func (*DepositRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{1}
+	return file_todo_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *DepositRes) GetStatus() int32 {
+func (x *DepositRes) GetResult() isDepositRes_Result {
 	if x != nil {
-		return x.Status
+		return x.Result
 	}
-	return 0
+	return nil
 }
 
-func (x *DepositRes) GetMessage() string {
+func (x *DepositRes) GetSuccess() *DepositRes_Success {
 	if x != nil {
-		return x.Message
+		if x, ok := x.Result.(*DepositRes_Success_); ok {
+			return x.Success
+		}
 	}
-	return ""
+	return nil
 }
+
+func (x *DepositRes) GetFailure() *Failure {
+	if x != nil {
+		if x, ok := x.Result.(*DepositRes_Failure); ok {
+			return x.Failure
+		}
+	}
+	return nil
+}
+
+type isDepositRes_Result interface {
+	isDepositRes_Result()
+}
+
+type DepositRes_Success_ struct {
+	Success *DepositRes_Success `protobuf:"bytes,1,opt,name=success,proto3,oneof"`
+}
+
+type DepositRes_Failure struct {
+	Failure *Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
+}
+
+func (*DepositRes_Success_) isDepositRes_Result() {}
+
+func (*DepositRes_Failure) isDepositRes_Result() {}
 
 type WithdrawReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -126,7 +251,7 @@ type WithdrawReq struct {
 
 func (x *WithdrawReq) Reset() {
 	*x = WithdrawReq{}
-	mi := &file_todo_proto_msgTypes[2]
+	mi := &file_todo_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -138,7 +263,7 @@ func (x *WithdrawReq) String() string {
 func (*WithdrawReq) ProtoMessage() {}
 
 func (x *WithdrawReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[2]
+	mi := &file_todo_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -151,7 +276,7 @@ func (x *WithdrawReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WithdrawReq.ProtoReflect.Descriptor instead.
 func (*WithdrawReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{2}
+	return file_todo_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *WithdrawReq) GetAmount() float32 {
@@ -162,16 +287,19 @@ func (x *WithdrawReq) GetAmount() float32 {
 }
 
 type WithdrawRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Result:
+	//
+	//	*WithdrawRes_Success_
+	//	*WithdrawRes_Failure
+	Result        isWithdrawRes_Result `protobuf_oneof:"result"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WithdrawRes) Reset() {
 	*x = WithdrawRes{}
-	mi := &file_todo_proto_msgTypes[3]
+	mi := &file_todo_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -183,7 +311,7 @@ func (x *WithdrawRes) String() string {
 func (*WithdrawRes) ProtoMessage() {}
 
 func (x *WithdrawRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[3]
+	mi := &file_todo_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -196,22 +324,49 @@ func (x *WithdrawRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WithdrawRes.ProtoReflect.Descriptor instead.
 func (*WithdrawRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{3}
+	return file_todo_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *WithdrawRes) GetStatus() int32 {
+func (x *WithdrawRes) GetResult() isWithdrawRes_Result {
 	if x != nil {
-		return x.Status
+		return x.Result
 	}
-	return 0
+	return nil
 }
 
-func (x *WithdrawRes) GetMessage() string {
+func (x *WithdrawRes) GetSuccess() *WithdrawRes_Success {
 	if x != nil {
-		return x.Message
+		if x, ok := x.Result.(*WithdrawRes_Success_); ok {
+			return x.Success
+		}
 	}
-	return ""
+	return nil
 }
+
+func (x *WithdrawRes) GetFailure() *Failure {
+	if x != nil {
+		if x, ok := x.Result.(*WithdrawRes_Failure); ok {
+			return x.Failure
+		}
+	}
+	return nil
+}
+
+type isWithdrawRes_Result interface {
+	isWithdrawRes_Result()
+}
+
+type WithdrawRes_Success_ struct {
+	Success *WithdrawRes_Success `protobuf:"bytes,1,opt,name=success,proto3,oneof"`
+}
+
+type WithdrawRes_Failure struct {
+	Failure *Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
+}
+
+func (*WithdrawRes_Success_) isWithdrawRes_Result() {}
+
+func (*WithdrawRes_Failure) isWithdrawRes_Result() {}
 
 type TransferReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -223,7 +378,7 @@ type TransferReq struct {
 
 func (x *TransferReq) Reset() {
 	*x = TransferReq{}
-	mi := &file_todo_proto_msgTypes[4]
+	mi := &file_todo_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -235,7 +390,7 @@ func (x *TransferReq) String() string {
 func (*TransferReq) ProtoMessage() {}
 
 func (x *TransferReq) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[4]
+	mi := &file_todo_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -248,7 +403,7 @@ func (x *TransferReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferReq.ProtoReflect.Descriptor instead.
 func (*TransferReq) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{4}
+	return file_todo_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TransferReq) GetAmount() float32 {
@@ -266,16 +421,19 @@ func (x *TransferReq) GetTo() string {
 }
 
 type TransferRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Result:
+	//
+	//	*TransferRes_Success_
+	//	*TransferRes_Failure
+	Result        isTransferRes_Result `protobuf_oneof:"result"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TransferRes) Reset() {
 	*x = TransferRes{}
-	mi := &file_todo_proto_msgTypes[5]
+	mi := &file_todo_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -287,7 +445,7 @@ func (x *TransferRes) String() string {
 func (*TransferRes) ProtoMessage() {}
 
 func (x *TransferRes) ProtoReflect() protoreflect.Message {
-	mi := &file_todo_proto_msgTypes[5]
+	mi := &file_todo_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -300,17 +458,200 @@ func (x *TransferRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferRes.ProtoReflect.Descriptor instead.
 func (*TransferRes) Descriptor() ([]byte, []int) {
-	return file_todo_proto_rawDescGZIP(), []int{5}
+	return file_todo_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *TransferRes) GetStatus() int32 {
+func (x *TransferRes) GetResult() isTransferRes_Result {
+	if x != nil {
+		return x.Result
+	}
+	return nil
+}
+
+func (x *TransferRes) GetSuccess() *TransferRes_Success {
+	if x != nil {
+		if x, ok := x.Result.(*TransferRes_Success_); ok {
+			return x.Success
+		}
+	}
+	return nil
+}
+
+func (x *TransferRes) GetFailure() *Failure {
+	if x != nil {
+		if x, ok := x.Result.(*TransferRes_Failure); ok {
+			return x.Failure
+		}
+	}
+	return nil
+}
+
+type isTransferRes_Result interface {
+	isTransferRes_Result()
+}
+
+type TransferRes_Success_ struct {
+	Success *TransferRes_Success `protobuf:"bytes,1,opt,name=success,proto3,oneof"`
+}
+
+type TransferRes_Failure struct {
+	Failure *Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
+}
+
+func (*TransferRes_Success_) isTransferRes_Result() {}
+
+func (*TransferRes_Failure) isTransferRes_Result() {}
+
+type DepositRes_Success struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DepositRes_Success) Reset() {
+	*x = DepositRes_Success{}
+	mi := &file_todo_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DepositRes_Success) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DepositRes_Success) ProtoMessage() {}
+
+func (x *DepositRes_Success) ProtoReflect() protoreflect.Message {
+	mi := &file_todo_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DepositRes_Success.ProtoReflect.Descriptor instead.
+func (*DepositRes_Success) Descriptor() ([]byte, []int) {
+	return file_todo_proto_rawDescGZIP(), []int{2, 0}
+}
+
+func (x *DepositRes_Success) GetStatus() int32 {
 	if x != nil {
 		return x.Status
 	}
 	return 0
 }
 
-func (x *TransferRes) GetMessage() string {
+func (x *DepositRes_Success) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type WithdrawRes_Success struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WithdrawRes_Success) Reset() {
+	*x = WithdrawRes_Success{}
+	mi := &file_todo_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WithdrawRes_Success) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WithdrawRes_Success) ProtoMessage() {}
+
+func (x *WithdrawRes_Success) ProtoReflect() protoreflect.Message {
+	mi := &file_todo_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WithdrawRes_Success.ProtoReflect.Descriptor instead.
+func (*WithdrawRes_Success) Descriptor() ([]byte, []int) {
+	return file_todo_proto_rawDescGZIP(), []int{4, 0}
+}
+
+func (x *WithdrawRes_Success) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *WithdrawRes_Success) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type TransferRes_Success struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransferRes_Success) Reset() {
+	*x = TransferRes_Success{}
+	mi := &file_todo_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferRes_Success) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferRes_Success) ProtoMessage() {}
+
+func (x *TransferRes_Success) ProtoReflect() protoreflect.Message {
+	mi := &file_todo_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferRes_Success.ProtoReflect.Descriptor instead.
+func (*TransferRes_Success) Descriptor() ([]byte, []int) {
+	return file_todo_proto_rawDescGZIP(), []int{6, 0}
+}
+
+func (x *TransferRes_Success) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *TransferRes_Success) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -325,22 +666,39 @@ const file_todo_proto_rawDesc = "" +
 	"todo.proto\x12\x05proto\"$\n" +
 	"\n" +
 	"DepositReq\x12\x16\n" +
-	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\">\n" +
+	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"g\n" +
+	"\aFailure\x124\n" +
+	"\vfailureCode\x18\x01 \x01(\x0e2\x12.proto.FailureCodeR\vfailureCode\x12&\n" +
+	"\x0efailureMessage\x18\x02 \x01(\tR\x0efailureMessage\"\xb6\x01\n" +
 	"\n" +
-	"DepositRes\x12\x16\n" +
+	"DepositRes\x125\n" +
+	"\asuccess\x18\x01 \x01(\v2\x19.proto.DepositRes.SuccessH\x00R\asuccess\x12*\n" +
+	"\afailure\x18\x02 \x01(\v2\x0e.proto.FailureH\x00R\afailure\x1a;\n" +
+	"\aSuccess\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
-	"\aMessage\x18\x02 \x01(\tR\aMessage\"%\n" +
+	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
+	"\x06result\"%\n" +
 	"\vWithdrawReq\x12\x16\n" +
-	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"?\n" +
-	"\vWithdrawRes\x12\x16\n" +
+	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"\xb8\x01\n" +
+	"\vWithdrawRes\x126\n" +
+	"\asuccess\x18\x01 \x01(\v2\x1a.proto.WithdrawRes.SuccessH\x00R\asuccess\x12*\n" +
+	"\afailure\x18\x02 \x01(\v2\x0e.proto.FailureH\x00R\afailure\x1a;\n" +
+	"\aSuccess\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
-	"\aMessage\x18\x02 \x01(\tR\aMessage\"5\n" +
+	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
+	"\x06result\"5\n" +
 	"\vTransferReq\x12\x16\n" +
 	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\x12\x0e\n" +
-	"\x02To\x18\x02 \x01(\tR\x02To\"?\n" +
-	"\vTransferRes\x12\x16\n" +
+	"\x02To\x18\x02 \x01(\tR\x02To\"\xb8\x01\n" +
+	"\vTransferRes\x126\n" +
+	"\asuccess\x18\x01 \x01(\v2\x1a.proto.TransferRes.SuccessH\x00R\asuccess\x12*\n" +
+	"\afailure\x18\x02 \x01(\v2\x0e.proto.FailureH\x00R\afailure\x1a;\n" +
+	"\aSuccess\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
-	"\aMessage\x18\x02 \x01(\tR\aMessage2\xac\x01\n" +
+	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
+	"\x06result* \n" +
+	"\vFailureCode\x12\x11\n" +
+	"\rGENERAL_ERROR\x10\x002\xac\x01\n" +
 	"\vTodoService\x121\n" +
 	"\aDeposit\x12\x11.proto.DepositReq\x1a\x11.proto.DepositRes\"\x00\x124\n" +
 	"\bWithdraw\x12\x12.proto.WithdrawReq\x1a\x12.proto.WithdrawRes\"\x00\x124\n" +
@@ -358,27 +716,40 @@ func file_todo_proto_rawDescGZIP() []byte {
 	return file_todo_proto_rawDescData
 }
 
-var file_todo_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_todo_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_todo_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_todo_proto_goTypes = []any{
-	(*DepositReq)(nil),  // 0: proto.DepositReq
-	(*DepositRes)(nil),  // 1: proto.DepositRes
-	(*WithdrawReq)(nil), // 2: proto.WithdrawReq
-	(*WithdrawRes)(nil), // 3: proto.WithdrawRes
-	(*TransferReq)(nil), // 4: proto.TransferReq
-	(*TransferRes)(nil), // 5: proto.TransferRes
+	(FailureCode)(0),            // 0: proto.FailureCode
+	(*DepositReq)(nil),          // 1: proto.DepositReq
+	(*Failure)(nil),             // 2: proto.Failure
+	(*DepositRes)(nil),          // 3: proto.DepositRes
+	(*WithdrawReq)(nil),         // 4: proto.WithdrawReq
+	(*WithdrawRes)(nil),         // 5: proto.WithdrawRes
+	(*TransferReq)(nil),         // 6: proto.TransferReq
+	(*TransferRes)(nil),         // 7: proto.TransferRes
+	(*DepositRes_Success)(nil),  // 8: proto.DepositRes.Success
+	(*WithdrawRes_Success)(nil), // 9: proto.WithdrawRes.Success
+	(*TransferRes_Success)(nil), // 10: proto.TransferRes.Success
 }
 var file_todo_proto_depIdxs = []int32{
-	0, // 0: proto.TodoService.Deposit:input_type -> proto.DepositReq
-	2, // 1: proto.TodoService.Withdraw:input_type -> proto.WithdrawReq
-	4, // 2: proto.TodoService.Transfer:input_type -> proto.TransferReq
-	1, // 3: proto.TodoService.Deposit:output_type -> proto.DepositRes
-	3, // 4: proto.TodoService.Withdraw:output_type -> proto.WithdrawRes
-	5, // 5: proto.TodoService.Transfer:output_type -> proto.TransferRes
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: proto.Failure.failureCode:type_name -> proto.FailureCode
+	8,  // 1: proto.DepositRes.success:type_name -> proto.DepositRes.Success
+	2,  // 2: proto.DepositRes.failure:type_name -> proto.Failure
+	9,  // 3: proto.WithdrawRes.success:type_name -> proto.WithdrawRes.Success
+	2,  // 4: proto.WithdrawRes.failure:type_name -> proto.Failure
+	10, // 5: proto.TransferRes.success:type_name -> proto.TransferRes.Success
+	2,  // 6: proto.TransferRes.failure:type_name -> proto.Failure
+	1,  // 7: proto.TodoService.Deposit:input_type -> proto.DepositReq
+	4,  // 8: proto.TodoService.Withdraw:input_type -> proto.WithdrawReq
+	6,  // 9: proto.TodoService.Transfer:input_type -> proto.TransferReq
+	3,  // 10: proto.TodoService.Deposit:output_type -> proto.DepositRes
+	5,  // 11: proto.TodoService.Withdraw:output_type -> proto.WithdrawRes
+	7,  // 12: proto.TodoService.Transfer:output_type -> proto.TransferRes
+	10, // [10:13] is the sub-list for method output_type
+	7,  // [7:10] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_todo_proto_init() }
@@ -386,18 +757,31 @@ func file_todo_proto_init() {
 	if File_todo_proto != nil {
 		return
 	}
+	file_todo_proto_msgTypes[2].OneofWrappers = []any{
+		(*DepositRes_Success_)(nil),
+		(*DepositRes_Failure)(nil),
+	}
+	file_todo_proto_msgTypes[4].OneofWrappers = []any{
+		(*WithdrawRes_Success_)(nil),
+		(*WithdrawRes_Failure)(nil),
+	}
+	file_todo_proto_msgTypes[6].OneofWrappers = []any{
+		(*TransferRes_Success_)(nil),
+		(*TransferRes_Failure)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_todo_proto_rawDesc), len(file_todo_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   6,
+			NumEnums:      1,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_todo_proto_goTypes,
 		DependencyIndexes: file_todo_proto_depIdxs,
+		EnumInfos:         file_todo_proto_enumTypes,
 		MessageInfos:      file_todo_proto_msgTypes,
 	}.Build()
 	File_todo_proto = out.File

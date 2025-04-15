@@ -2,12 +2,29 @@ syntax = 'proto3';
 package proto;
 option go_package = '/;proto';
 
+enum FailureCode {
+  GENERAL_ERROR = 0;
+}
+
+message Failure {
+  FailureCode failureCode = 1;
+  string failureMessage = 2;
+}
+
 message BalanceReq {
   string UserId = 1;
 }
 
 message BalanceRes {
-  float Balance = 1;
+
+  message Success {
+    float Balance = 1;
+  }
+
+  oneof result {
+    Success success = 1;
+    Failure failure = 2;
+  }
 }
 
 service PaymentService {
