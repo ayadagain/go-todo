@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc/metadata"
-	"log"
 	"net/http"
 	"os"
 )
@@ -92,7 +91,37 @@ func (s *networking) withdraw(c *gin.Context) {
 		Amount: postData.Amount,
 	})
 
-	if err != nil {
+	switch result := r.Result.(type) {
+	case *proto.WithdrawRes_Success_:
+		respMessage := "fail"
+		if result.Success.Status == 1 {
+			respMessage = "success"
+		}
+
+		res := &response{
+			Message: respMessage,
+			Status:  http.StatusOK,
+			Data:    result.Success.Message,
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+	case *proto.WithdrawRes_Failure:
+		respMessage := "fail"
+
+		if result.Failure.FailureCode == 1 {
+			respMessage = "success"
+		}
+		res := &response{
+			Message: respMessage,
+			Status:  http.StatusBadRequest,
+			Data:    result.Failure.FailureMessage,
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+
+	default:
 		res := &response{
 			Message: "fail",
 			Status:  http.StatusBadRequest,
@@ -102,14 +131,6 @@ func (s *networking) withdraw(c *gin.Context) {
 		c.IndentedJSON(res.Status, res)
 		return
 	}
-
-	res := &response{
-		Message: "success",
-		Status:  http.StatusOK,
-		Data:    r,
-	}
-
-	c.IndentedJSON(res.Status, res)
 
 }
 
@@ -146,7 +167,6 @@ func (s *networking) deposit(c *gin.Context) {
 	})
 
 	if err != nil {
-		log.Println("err: ", err)
 		res := &response{
 			Message: "fail",
 			Status:  http.StatusBadRequest,
@@ -157,13 +177,42 @@ func (s *networking) deposit(c *gin.Context) {
 		return
 	}
 
-	res := &response{
-		Message: "success",
-		Status:  http.StatusOK,
-		Data:    r,
-	}
+	switch result := r.Result.(type) {
+	case *proto.DepositRes_Success_:
+		respMessage := "fail"
 
-	c.IndentedJSON(res.Status, res)
+		if result.Success.Status == 1 {
+			respMessage = "success"
+		}
+
+		res := &response{
+			Message: respMessage,
+			Status:  http.StatusBadRequest,
+			Data:    result.Success.Message,
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+
+	case *proto.DepositRes_Failure:
+		res := &response{
+			Message: "fail",
+			Status:  http.StatusBadRequest,
+			Data:    result.Failure.FailureMessage,
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+	default:
+		res := &response{
+			Message: "fail",
+			Status:  http.StatusBadRequest,
+			Data:    "Something went wrong",
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+	}
 
 }
 
@@ -201,7 +250,6 @@ func (s *networking) transfer(c *gin.Context) {
 	})
 
 	if err != nil {
-		log.Println("err: ", err)
 		res := &response{
 			Message: "fail",
 			Status:  http.StatusBadRequest,
@@ -212,14 +260,43 @@ func (s *networking) transfer(c *gin.Context) {
 		return
 	}
 
-	res := &response{
-		Message: "success",
-		Status:  http.StatusOK,
-		Data:    r,
+	switch result := r.Result.(type) {
+	case *proto.TransferRes_Success_:
+		respMessage := "fail"
+
+		if result.Success.Status == 1 {
+			respMessage = "success"
+		}
+
+		res := &response{
+			Message: respMessage,
+			Status:  http.StatusOK,
+			Data:    result.Success.Message,
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+	case *proto.TransferRes_Failure:
+
+		res := &response{
+			Message: "fail",
+			Status:  http.StatusBadRequest,
+			Data:    result.Failure.FailureMessage,
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
+
+	default:
+		res := &response{
+			Message: "fail",
+			Status:  http.StatusBadRequest,
+			Data:    "Something went wrong",
+		}
+
+		c.IndentedJSON(res.Status, res)
+		return
 	}
-
-	c.IndentedJSON(res.Status, res)
-
 }
 
 func main() {

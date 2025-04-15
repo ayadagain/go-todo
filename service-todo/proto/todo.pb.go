@@ -21,46 +21,49 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type FailureCode int32
+type T_FailureCode int32
 
 const (
-	FailureCode_GENERAL_ERROR FailureCode = 0
+	T_FailureCode_T_GENERAL_ERROR        T_FailureCode = 0
+	T_FailureCode_T_INSUFFICIENT_BALANCE T_FailureCode = 1
 )
 
-// Enum value maps for FailureCode.
+// Enum value maps for T_FailureCode.
 var (
-	FailureCode_name = map[int32]string{
-		0: "GENERAL_ERROR",
+	T_FailureCode_name = map[int32]string{
+		0: "T_GENERAL_ERROR",
+		1: "T_INSUFFICIENT_BALANCE",
 	}
-	FailureCode_value = map[string]int32{
-		"GENERAL_ERROR": 0,
+	T_FailureCode_value = map[string]int32{
+		"T_GENERAL_ERROR":        0,
+		"T_INSUFFICIENT_BALANCE": 1,
 	}
 )
 
-func (x FailureCode) Enum() *FailureCode {
-	p := new(FailureCode)
+func (x T_FailureCode) Enum() *T_FailureCode {
+	p := new(T_FailureCode)
 	*p = x
 	return p
 }
 
-func (x FailureCode) String() string {
+func (x T_FailureCode) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (FailureCode) Descriptor() protoreflect.EnumDescriptor {
+func (T_FailureCode) Descriptor() protoreflect.EnumDescriptor {
 	return file_todo_proto_enumTypes[0].Descriptor()
 }
 
-func (FailureCode) Type() protoreflect.EnumType {
+func (T_FailureCode) Type() protoreflect.EnumType {
 	return &file_todo_proto_enumTypes[0]
 }
 
-func (x FailureCode) Number() protoreflect.EnumNumber {
+func (x T_FailureCode) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use FailureCode.Descriptor instead.
-func (FailureCode) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use T_FailureCode.Descriptor instead.
+func (T_FailureCode) EnumDescriptor() ([]byte, []int) {
 	return file_todo_proto_rawDescGZIP(), []int{0}
 }
 
@@ -108,28 +111,28 @@ func (x *DepositReq) GetAmount() float32 {
 	return 0
 }
 
-type Failure struct {
+type T_Failure struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	FailureCode    FailureCode            `protobuf:"varint,1,opt,name=failureCode,proto3,enum=proto.FailureCode" json:"failureCode,omitempty"`
+	FailureCode    T_FailureCode          `protobuf:"varint,1,opt,name=failureCode,proto3,enum=proto.T_FailureCode" json:"failureCode,omitempty"`
 	FailureMessage string                 `protobuf:"bytes,2,opt,name=failureMessage,proto3" json:"failureMessage,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
-func (x *Failure) Reset() {
-	*x = Failure{}
+func (x *T_Failure) Reset() {
+	*x = T_Failure{}
 	mi := &file_todo_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Failure) String() string {
+func (x *T_Failure) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Failure) ProtoMessage() {}
+func (*T_Failure) ProtoMessage() {}
 
-func (x *Failure) ProtoReflect() protoreflect.Message {
+func (x *T_Failure) ProtoReflect() protoreflect.Message {
 	mi := &file_todo_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -141,19 +144,19 @@ func (x *Failure) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Failure.ProtoReflect.Descriptor instead.
-func (*Failure) Descriptor() ([]byte, []int) {
+// Deprecated: Use T_Failure.ProtoReflect.Descriptor instead.
+func (*T_Failure) Descriptor() ([]byte, []int) {
 	return file_todo_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Failure) GetFailureCode() FailureCode {
+func (x *T_Failure) GetFailureCode() T_FailureCode {
 	if x != nil {
 		return x.FailureCode
 	}
-	return FailureCode_GENERAL_ERROR
+	return T_FailureCode_T_GENERAL_ERROR
 }
 
-func (x *Failure) GetFailureMessage() string {
+func (x *T_Failure) GetFailureMessage() string {
 	if x != nil {
 		return x.FailureMessage
 	}
@@ -217,7 +220,7 @@ func (x *DepositRes) GetSuccess() *DepositRes_Success {
 	return nil
 }
 
-func (x *DepositRes) GetFailure() *Failure {
+func (x *DepositRes) GetFailure() *T_Failure {
 	if x != nil {
 		if x, ok := x.Result.(*DepositRes_Failure); ok {
 			return x.Failure
@@ -235,7 +238,7 @@ type DepositRes_Success_ struct {
 }
 
 type DepositRes_Failure struct {
-	Failure *Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
+	Failure *T_Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
 }
 
 func (*DepositRes_Success_) isDepositRes_Result() {}
@@ -343,7 +346,7 @@ func (x *WithdrawRes) GetSuccess() *WithdrawRes_Success {
 	return nil
 }
 
-func (x *WithdrawRes) GetFailure() *Failure {
+func (x *WithdrawRes) GetFailure() *T_Failure {
 	if x != nil {
 		if x, ok := x.Result.(*WithdrawRes_Failure); ok {
 			return x.Failure
@@ -361,7 +364,7 @@ type WithdrawRes_Success_ struct {
 }
 
 type WithdrawRes_Failure struct {
-	Failure *Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
+	Failure *T_Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
 }
 
 func (*WithdrawRes_Success_) isWithdrawRes_Result() {}
@@ -477,7 +480,7 @@ func (x *TransferRes) GetSuccess() *TransferRes_Success {
 	return nil
 }
 
-func (x *TransferRes) GetFailure() *Failure {
+func (x *TransferRes) GetFailure() *T_Failure {
 	if x != nil {
 		if x, ok := x.Result.(*TransferRes_Failure); ok {
 			return x.Failure
@@ -495,7 +498,7 @@ type TransferRes_Success_ struct {
 }
 
 type TransferRes_Failure struct {
-	Failure *Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
+	Failure *T_Failure `protobuf:"bytes,2,opt,name=failure,proto3,oneof"`
 }
 
 func (*TransferRes_Success_) isTransferRes_Result() {}
@@ -666,39 +669,40 @@ const file_todo_proto_rawDesc = "" +
 	"todo.proto\x12\x05proto\"$\n" +
 	"\n" +
 	"DepositReq\x12\x16\n" +
-	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"g\n" +
-	"\aFailure\x124\n" +
-	"\vfailureCode\x18\x01 \x01(\x0e2\x12.proto.FailureCodeR\vfailureCode\x12&\n" +
-	"\x0efailureMessage\x18\x02 \x01(\tR\x0efailureMessage\"\xb6\x01\n" +
+	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"k\n" +
+	"\tT_Failure\x126\n" +
+	"\vfailureCode\x18\x01 \x01(\x0e2\x14.proto.T_FailureCodeR\vfailureCode\x12&\n" +
+	"\x0efailureMessage\x18\x02 \x01(\tR\x0efailureMessage\"\xb8\x01\n" +
 	"\n" +
 	"DepositRes\x125\n" +
-	"\asuccess\x18\x01 \x01(\v2\x19.proto.DepositRes.SuccessH\x00R\asuccess\x12*\n" +
-	"\afailure\x18\x02 \x01(\v2\x0e.proto.FailureH\x00R\afailure\x1a;\n" +
+	"\asuccess\x18\x01 \x01(\v2\x19.proto.DepositRes.SuccessH\x00R\asuccess\x12,\n" +
+	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a;\n" +
 	"\aSuccess\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
 	"\x06result\"%\n" +
 	"\vWithdrawReq\x12\x16\n" +
-	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"\xb8\x01\n" +
+	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"\xba\x01\n" +
 	"\vWithdrawRes\x126\n" +
-	"\asuccess\x18\x01 \x01(\v2\x1a.proto.WithdrawRes.SuccessH\x00R\asuccess\x12*\n" +
-	"\afailure\x18\x02 \x01(\v2\x0e.proto.FailureH\x00R\afailure\x1a;\n" +
+	"\asuccess\x18\x01 \x01(\v2\x1a.proto.WithdrawRes.SuccessH\x00R\asuccess\x12,\n" +
+	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a;\n" +
 	"\aSuccess\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
 	"\x06result\"5\n" +
 	"\vTransferReq\x12\x16\n" +
 	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\x12\x0e\n" +
-	"\x02To\x18\x02 \x01(\tR\x02To\"\xb8\x01\n" +
+	"\x02To\x18\x02 \x01(\tR\x02To\"\xba\x01\n" +
 	"\vTransferRes\x126\n" +
-	"\asuccess\x18\x01 \x01(\v2\x1a.proto.TransferRes.SuccessH\x00R\asuccess\x12*\n" +
-	"\afailure\x18\x02 \x01(\v2\x0e.proto.FailureH\x00R\afailure\x1a;\n" +
+	"\asuccess\x18\x01 \x01(\v2\x1a.proto.TransferRes.SuccessH\x00R\asuccess\x12,\n" +
+	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a;\n" +
 	"\aSuccess\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
-	"\x06result* \n" +
-	"\vFailureCode\x12\x11\n" +
-	"\rGENERAL_ERROR\x10\x002\xac\x01\n" +
+	"\x06result*@\n" +
+	"\rT_FailureCode\x12\x13\n" +
+	"\x0fT_GENERAL_ERROR\x10\x00\x12\x1a\n" +
+	"\x16T_INSUFFICIENT_BALANCE\x10\x012\xac\x01\n" +
 	"\vTodoService\x121\n" +
 	"\aDeposit\x12\x11.proto.DepositReq\x1a\x11.proto.DepositRes\"\x00\x124\n" +
 	"\bWithdraw\x12\x12.proto.WithdrawReq\x1a\x12.proto.WithdrawRes\"\x00\x124\n" +
@@ -719,9 +723,9 @@ func file_todo_proto_rawDescGZIP() []byte {
 var file_todo_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_todo_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_todo_proto_goTypes = []any{
-	(FailureCode)(0),            // 0: proto.FailureCode
+	(T_FailureCode)(0),          // 0: proto.T_FailureCode
 	(*DepositReq)(nil),          // 1: proto.DepositReq
-	(*Failure)(nil),             // 2: proto.Failure
+	(*T_Failure)(nil),           // 2: proto.T_Failure
 	(*DepositRes)(nil),          // 3: proto.DepositRes
 	(*WithdrawReq)(nil),         // 4: proto.WithdrawReq
 	(*WithdrawRes)(nil),         // 5: proto.WithdrawRes
@@ -732,13 +736,13 @@ var file_todo_proto_goTypes = []any{
 	(*TransferRes_Success)(nil), // 10: proto.TransferRes.Success
 }
 var file_todo_proto_depIdxs = []int32{
-	0,  // 0: proto.Failure.failureCode:type_name -> proto.FailureCode
+	0,  // 0: proto.T_Failure.failureCode:type_name -> proto.T_FailureCode
 	8,  // 1: proto.DepositRes.success:type_name -> proto.DepositRes.Success
-	2,  // 2: proto.DepositRes.failure:type_name -> proto.Failure
+	2,  // 2: proto.DepositRes.failure:type_name -> proto.T_Failure
 	9,  // 3: proto.WithdrawRes.success:type_name -> proto.WithdrawRes.Success
-	2,  // 4: proto.WithdrawRes.failure:type_name -> proto.Failure
+	2,  // 4: proto.WithdrawRes.failure:type_name -> proto.T_Failure
 	10, // 5: proto.TransferRes.success:type_name -> proto.TransferRes.Success
-	2,  // 6: proto.TransferRes.failure:type_name -> proto.Failure
+	2,  // 6: proto.TransferRes.failure:type_name -> proto.T_Failure
 	1,  // 7: proto.TodoService.Deposit:input_type -> proto.DepositReq
 	4,  // 8: proto.TodoService.Withdraw:input_type -> proto.WithdrawReq
 	6,  // 9: proto.TodoService.Transfer:input_type -> proto.TransferReq

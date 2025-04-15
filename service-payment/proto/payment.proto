@@ -4,6 +4,7 @@ option go_package = '/;proto';
 
 enum FailureCode {
   GENERAL_ERROR = 0;
+  INSUFFICIENT_BALANCE = 1;
 }
 
 message Failure {

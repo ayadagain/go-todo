@@ -42,44 +42,64 @@ func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *pro
 		existingBalance, err := s.grpcClient.BalanceInquiry(ctxWithMd, &paymentProto.BalanceReq{})
 
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to get balance for user: %v", err)
+			return nil, status.Errorf(codes.Internal, "Error calling the rpc: %v", err)
 		}
 
-		if existingBalance.Balance < req.Amount {
-			return nil, status.Errorf(codes.InvalidArgument, "insufficient balance")
+		switch result := existingBalance.Result.(type) {
+		case *paymentProto.BalanceRes_Success_:
+			if result.Success.Balance < req.Amount {
+				return &proto.WithdrawRes{
+					Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+						FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
+						FailureMessage: "Insufficient funds",
+					}},
+				}, nil
+			}
+
+			kMessage := bson.D{
+				{Key: "debtor", Value: userId[0]},
+				{Key: "amount", Value: req.Amount},
+				{Key: "creditor", Value: nil},
+				{Key: "event", Value: "Withdrawal"},
+			}
+
+			kMessageBytes, err := bson.Marshal(kMessage)
+			if err != nil {
+				return nil, status.Errorf(codes.Internal, "something went wrong")
+			}
+
+			err = s.kafka.Produce(&kafka.Message{
+				TopicPartition: kafka.TopicPartition{
+					Topic:     &s.kTopic,
+					Partition: kafka.PartitionAny,
+				},
+				Value: kMessageBytes,
+			}, nil)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return &proto.WithdrawRes{
+				Result: &proto.WithdrawRes_Success_{Success: &proto.WithdrawRes_Success{
+					Status:  1,
+					Message: fmt.Sprintf("You withdrew $%.2f from your balance. Your balance now is $%.2f", req.Amount, result.Success.Balance-req.Amount),
+				}},
+			}, nil
+
+		case *paymentProto.BalanceRes_Failure:
+			return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode(result.Failure.FailureCode),
+				FailureMessage: result.Failure.FailureMessage,
+			}}}, nil
 		}
 
-		kMessage := bson.D{
-			{Key: "debtor", Value: userId[0]},
-			{Key: "amount", Value: req.Amount},
-			{Key: "creditor", Value: nil},
-			{Key: "event", Value: "Withdrawal"},
-		}
-
-		kMessageBytes, err := bson.Marshal(kMessage)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "something went wrong")
-		}
-
-		err = s.kafka.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{
-				Topic:     &s.kTopic,
-				Partition: kafka.PartitionAny,
-			},
-			Value: kMessageBytes,
-		}, nil)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return &proto.WithdrawRes{
-			Status:  1,
-			Message: fmt.Sprintf("You withdrew $%.2f from your balance. Your balance now is $%.2f", req.Amount, existingBalance.Balance-req.Amount),
-		}, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+	return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+		FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
+		FailureMessage: "Something went wrong",
+	}}}, nil
 }
 
 func (s *Server) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto.DepositRes, err error) {
@@ -118,13 +138,16 @@ func (s *Server) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto
 			return nil, err
 		}
 
-		return &proto.DepositRes{
+		return &proto.DepositRes{Result: &proto.DepositRes_Success_{Success: &proto.DepositRes_Success{
 			Status:  1,
 			Message: fmt.Sprintf("You deposited $%.2f in your balance", req.Amount),
-		}, nil
+		}}}, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+	return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
+		FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
+		FailureMessage: "Something went wrong",
+	}}}, nil
 }
 
 func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *proto.TransferRes, err error) {
@@ -150,36 +173,57 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
-		if existingBalance.Balance < req.Amount {
-			return nil, status.Errorf(codes.InvalidArgument, "insufficient balance")
+		switch result := existingBalance.Result.(type) {
+		case *paymentProto.BalanceRes_Success_:
+			if result.Success.Balance < req.Amount {
+				return &proto.TransferRes{
+					Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+						FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
+						FailureMessage: "Insufficient funds",
+					}},
+				}, nil
+			}
+
+			kMessage := bson.D{
+				{Key: "debtor", Value: userId[0]},
+				{Key: "amount", Value: req.Amount},
+				{Key: "creditor", Value: req.To},
+				{Key: "event", Value: "P2PTransfer"},
+			}
+
+			kMessageBytes, err := bson.Marshal(kMessage)
+			if err != nil {
+				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+					FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
+					FailureMessage: "Something went wrong",
+				}}}, nil
+			}
+
+			err = s.kafka.Produce(&kafka.Message{
+				TopicPartition: kafka.TopicPartition{
+					Topic:     &s.kTopic,
+					Partition: kafka.PartitionAny,
+				},
+				Value: kMessageBytes,
+			}, nil)
+
+			return &proto.TransferRes{Result: &proto.TransferRes_Success_{Success: &proto.TransferRes_Success{
+				Status:  1,
+				Message: fmt.Sprintf("You have transferred $%.2f successfully.", req.Amount),
+			}}}, nil
+
+		case *paymentProto.BalanceRes_Failure:
+			return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode(result.Failure.FailureCode),
+				FailureMessage: result.Failure.FailureMessage,
+			}}}, nil
 		}
 
-		kMessage := bson.D{
-			{Key: "debtor", Value: userId[0]},
-			{Key: "amount", Value: req.Amount},
-			{Key: "creditor", Value: req.To},
-			{Key: "event", Value: "P2PTransfer"},
-		}
-
-		kMessageBytes, err := bson.Marshal(kMessage)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "something went wrong")
-		}
-
-		err = s.kafka.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{
-				Topic:     &s.kTopic,
-				Partition: kafka.PartitionAny,
-			},
-			Value: kMessageBytes,
-		}, nil)
-
-		return &proto.TransferRes{
-			Status:  1,
-			Message: fmt.Sprintf("You have transferred $%.2f successfully.", req.Amount),
-		}, nil
 	}
-	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+	return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+		FailureCode:    0,
+		FailureMessage: "Something went wrong",
+	}}}, nil
 }
 
 func main() {

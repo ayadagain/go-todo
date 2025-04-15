@@ -6,12 +6,13 @@ message DepositReq {
   float Amount = 1;
 }
 
-enum FailureCode {
-  GENERAL_ERROR = 0;
+enum T_FailureCode {
+  T_GENERAL_ERROR = 0;
+  T_INSUFFICIENT_BALANCE = 1;
 }
 
-message Failure {
-  FailureCode failureCode = 1;
+message T_Failure {
+  T_FailureCode failureCode = 1;
   string failureMessage = 2;
 }
 
@@ -23,7 +24,7 @@ message DepositRes {
 
   oneof result {
     Success success = 1;
-    Failure failure = 2;
+    T_Failure failure = 2;
   }
 }
 
@@ -39,7 +40,7 @@ message WithdrawRes {
 
   oneof result {
     Success success = 1;
-    Failure failure = 2;
+    T_Failure failure = 2;
   }
 
 }
@@ -57,7 +58,7 @@ message TransferRes {
 
   oneof result {
     Success success = 1;
-    Failure failure = 2;
+    T_Failure failure = 2;
   }
 }
 

@@ -35,15 +35,24 @@ func (s *Server) BalanceInquiry(ctx context.Context, req *proto.BalanceReq) (res
 		userId := md["userid"]
 
 		if len(userId) == 0 {
-			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+
+			return &proto.BalanceRes{
+				Result: &proto.BalanceRes_Failure{Failure: &proto.Failure{
+					FailureCode:    proto.FailureCode_GENERAL_ERROR,
+					FailureMessage: "User Id is empty",
+				}},
+			}, nil
 		}
 
 		existingBalance := db.GetBalance(s.collection, userId[0])
 
 		return &proto.BalanceRes{
-			Balance: float32(existingBalance),
+			Result: &proto.BalanceRes_Success_{
+				Success: &proto.BalanceRes_Success{
+					Balance: float32(existingBalance),
+				},
+			},
 		}, nil
-
 	}
 
 	return nil, status.Errorf(codes.NotFound, "Something went wrong")
