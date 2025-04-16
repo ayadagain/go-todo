@@ -23,12 +23,10 @@ func NewRouter(serviceCtx ctx.ServiceCtx) *Router {
 
 func (r *Router) Install(ginEngine *gin.Engine) {
 	router := ginEngine.Group("")
-
 	router.Use(r.ServerKeyCheck)
 	router.POST("/withdraw", r.withdraw)
 	router.POST("/deposit", r.deposit)
 	router.POST("/transfer", r.transfer)
-
 }
 
 func (r *Router) withdraw(c *gin.Context) {

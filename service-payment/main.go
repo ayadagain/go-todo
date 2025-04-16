@@ -9,9 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"time"
@@ -55,7 +53,14 @@ func (s *Server) BalanceInquiry(ctx context.Context, req *proto.BalanceReq) (res
 		}, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "Something went wrong")
+	return &proto.BalanceRes{
+		Result: &proto.BalanceRes_Failure{
+			Failure: &proto.Failure{
+				FailureCode:    proto.FailureCode_MISSING_DATA,
+				FailureMessage: "User Id is empty",
+			},
+		},
+	}, nil
 }
 
 func main() {

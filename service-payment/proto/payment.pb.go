@@ -26,6 +26,7 @@ type FailureCode int32
 const (
 	FailureCode_GENERAL_ERROR        FailureCode = 0
 	FailureCode_INSUFFICIENT_BALANCE FailureCode = 1
+	FailureCode_MISSING_DATA         FailureCode = 2
 )
 
 // Enum value maps for FailureCode.
@@ -33,10 +34,12 @@ var (
 	FailureCode_name = map[int32]string{
 		0: "GENERAL_ERROR",
 		1: "INSUFFICIENT_BALANCE",
+		2: "MISSING_DATA",
 	}
 	FailureCode_value = map[string]int32{
 		"GENERAL_ERROR":        0,
 		"INSUFFICIENT_BALANCE": 1,
+		"MISSING_DATA":         2,
 	}
 )
 
@@ -306,10 +309,11 @@ const file_payment_proto_rawDesc = "" +
 	"\afailure\x18\x02 \x01(\v2\x0e.proto.FailureH\x00R\afailure\x1a#\n" +
 	"\aSuccess\x12\x18\n" +
 	"\aBalance\x18\x01 \x01(\x02R\aBalanceB\b\n" +
-	"\x06result*:\n" +
+	"\x06result*L\n" +
 	"\vFailureCode\x12\x11\n" +
 	"\rGENERAL_ERROR\x10\x00\x12\x18\n" +
-	"\x14INSUFFICIENT_BALANCE\x10\x012J\n" +
+	"\x14INSUFFICIENT_BALANCE\x10\x01\x12\x10\n" +
+	"\fMISSING_DATA\x10\x022J\n" +
 	"\x0ePaymentService\x128\n" +
 	"\x0eBalanceInquiry\x12\x11.proto.BalanceReq\x1a\x11.proto.BalanceRes\"\x00B\tZ\a/;protob\x06proto3"
 

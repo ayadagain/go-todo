@@ -6,15 +6,16 @@ import (
 	"assm/service-todo/proto"
 	"context"
 	"fmt"
+	"log"
+	"net"
+	"os"
+
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"go.mongodb.org/mongo-driver/bson"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"log"
-	"net"
-	"os"
 )
 
 type Server struct {
@@ -26,14 +27,20 @@ type Server struct {
 
 func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *proto.WithdrawRes, err error) {
 	if req.Amount == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "amount is empty")
+		return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+			FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
+			FailureMessage: "Amount is empty",
+		}}}, nil
 	}
 
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		userId := md["userid"]
 
 		if len(userId) == 0 {
-			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+			return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
+				FailureMessage: "userId is empty",
+			}}}, nil
 		}
 
 		md := metadata.New(map[string]string{"userId": userId[0]})
@@ -42,7 +49,10 @@ func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *pro
 		existingBalance, err := s.grpcClient.BalanceInquiry(ctxWithMd, &paymentProto.BalanceReq{})
 
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "Error calling the rpc: %v", err)
+			return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
+				FailureMessage: "Error calling the rpc",
+			}}}, nil
 		}
 
 		switch result := existingBalance.Result.(type) {
@@ -65,7 +75,10 @@ func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *pro
 
 			kMessageBytes, err := bson.Marshal(kMessage)
 			if err != nil {
-				return nil, status.Errorf(codes.Internal, "something went wrong")
+				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+					FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
+					FailureMessage: "Something went wrong",
+				}}}, nil
 			}
 
 			err = s.kafka.Produce(&kafka.Message{
@@ -77,7 +90,10 @@ func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *pro
 			}, nil)
 
 			if err != nil {
-				return nil, err
+				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+					FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
+					FailureMessage: "Kafka network error",
+				}}}, nil
 			}
 
 			return &proto.WithdrawRes{
@@ -88,12 +104,24 @@ func (s *Server) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *pro
 			}, nil
 
 		case *paymentProto.BalanceRes_Failure:
+			if result.Failure.FailureCode == paymentProto.FailureCode_MISSING_DATA {
+				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+					FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
+					FailureMessage: "Missing data",
+				}}}, nil
+
+			} else if result.Failure.FailureCode == paymentProto.FailureCode_INSUFFICIENT_BALANCE {
+				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
+					FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
+					FailureMessage: "Insufficient Balance",
+				}}}, nil
+			}
+
 			return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode(result.Failure.FailureCode),
-				FailureMessage: result.Failure.FailureMessage,
+				FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
+				FailureMessage: "Something went wrong",
 			}}}, nil
 		}
-
 	}
 
 	return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
@@ -111,7 +139,10 @@ func (s *Server) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto
 		userId := md["userid"]
 
 		if len(userId) == 0 {
-			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+			return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
+				FailureMessage: "userId is empty",
+			}}}, nil
 		}
 
 		kMessage := bson.D{
@@ -123,7 +154,10 @@ func (s *Server) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto
 
 		kMessageBytes, err := bson.Marshal(kMessage)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "something went wrong")
+			return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
+				FailureMessage: "Something went wrong",
+			}}}, nil
 		}
 
 		err = s.kafka.Produce(&kafka.Message{
@@ -135,7 +169,10 @@ func (s *Server) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto
 		}, nil)
 
 		if err != nil {
-			return nil, err
+			return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
+				FailureMessage: "Kafka network error",
+			}}}, nil
 		}
 
 		return &proto.DepositRes{Result: &proto.DepositRes_Success_{Success: &proto.DepositRes_Success{
@@ -159,10 +196,11 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 		userId := md["userid"]
 
 		if len(userId) == 0 {
-			return nil, status.Errorf(codes.InvalidArgument, "userId is empty")
+			return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
+				FailureMessage: "userId is empty",
+			}}}, nil
 		}
-
-		//insertOp, err := db.Transfer(s.client, s.userCollection, userId[0], req.To, req.Amount)
 
 		md := metadata.New(map[string]string{"userId": userId[0]})
 		ctxWithMd := metadata.NewOutgoingContext(context.Background(), md)
@@ -170,7 +208,10 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 		existingBalance, err := s.grpcClient.BalanceInquiry(ctxWithMd, &paymentProto.BalanceReq{})
 
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
+			return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+				FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
+				FailureMessage: "Error calling the rpc",
+			}}}, nil
 		}
 
 		switch result := existingBalance.Result.(type) {
@@ -193,6 +234,7 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 
 			kMessageBytes, err := bson.Marshal(kMessage)
 			if err != nil {
+				fmt.Println("damn bro: ", err.Error())
 				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
 					FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
 					FailureMessage: "Something went wrong",
@@ -213,15 +255,31 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 			}}}, nil
 
 		case *paymentProto.BalanceRes_Failure:
+
+			fmt.Println("testing.....: ", result.Failure)
+
+			if result.Failure.FailureCode == paymentProto.FailureCode_MISSING_DATA {
+				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+					FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
+					FailureMessage: "Missing data",
+				}}}, nil
+
+			} else if result.Failure.FailureCode == paymentProto.FailureCode_INSUFFICIENT_BALANCE {
+				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
+					FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
+					FailureMessage: "Insufficient Balance",
+				}}}, nil
+			}
+
 			return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode(result.Failure.FailureCode),
-				FailureMessage: result.Failure.FailureMessage,
+				FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
+				FailureMessage: "Something went wrong",
 			}}}, nil
 		}
 
 	}
 	return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-		FailureCode:    0,
+		FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
 		FailureMessage: "Something went wrong",
 	}}}, nil
 }

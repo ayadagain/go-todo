@@ -10,6 +10,15 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+var (
+	ErrFailedTransaction = errors.New("fail to establish transaction")
+	ErrSmthWentWrong     = errors.New("something went wrong")
+	ErrNegVals           = errors.New("cannot send negative amount")
+	ErrInSufficientFunds = errors.New("insufficient funds")
+	ErrAmountEmpty       = errors.New("amount is empty")
+	ErrMissingData       = errors.New("missing data")
+)
+
 type DefaultService struct {
 	ServiceContext ctx.ServiceCtx
 	TodoGrpcClient *client.TodoClient
@@ -25,7 +34,7 @@ func NewDefaultService(serviceContext ctx.ServiceCtx) *DefaultService {
 
 func (a *DefaultService) Withdraw(amount float32) (response *model.TransactionResponse, err error) {
 	if amount < 0 {
-		return nil, errors.New("amount must be greater than zero")
+		return nil, ErrFailedTransaction
 	}
 
 	md := metadata.New(map[string]string{"userId": "67fbd5d9fc7128b743d265b7"})
@@ -33,7 +42,7 @@ func (a *DefaultService) Withdraw(amount float32) (response *model.TransactionRe
 
 	res, err := a.TodoGrpcClient.Client.Withdraw(ctxWithMd, &proto.WithdrawReq{Amount: amount})
 	if err != nil {
-		return nil, errors.New("fail to establish transaction")
+		return nil, ErrSmthWentWrong
 	}
 
 	switch result := res.Result.(type) {
@@ -44,19 +53,21 @@ func (a *DefaultService) Withdraw(amount float32) (response *model.TransactionRe
 		}, nil
 
 	case *proto.WithdrawRes_Failure:
-		return nil, errors.New(result.Failure.FailureMessage)
+		if result.Failure.FailureCode == proto.T_FailureCode_T_MISSING_DATA {
+			return nil, ErrMissingData
+		} else if result.Failure.FailureCode == proto.T_FailureCode_T_INSUFFICIENT_BALANCE {
+			return nil, ErrInSufficientFunds
+		}
+
+		return nil, ErrSmthWentWrong
 	}
 
-	return nil, errors.New("Something went wrong")
-
+	return nil, ErrSmthWentWrong
 }
 
 func (a *DefaultService) Deposit(amount float32) (response *model.TransactionResponse, err error) {
 	if amount < 0 {
-		return &model.TransactionResponse{
-			Status:  0,
-			Message: "Cannot send negative amount",
-		}, nil
+		return nil, ErrNegVals
 	}
 
 	md := metadata.New(map[string]string{"userId": "67fbd5d9fc7128b743d265b7"})
@@ -65,10 +76,7 @@ func (a *DefaultService) Deposit(amount float32) (response *model.TransactionRes
 	res, err := a.TodoGrpcClient.Client.Deposit(ctxWithMd, &proto.DepositReq{Amount: amount})
 
 	if err != nil {
-		return &model.TransactionResponse{
-			Status:  0,
-			Message: "Something went wrong",
-		}, nil
+		return nil, ErrSmthWentWrong
 	}
 
 	switch result := res.Result.(type) {
@@ -78,21 +86,15 @@ func (a *DefaultService) Deposit(amount float32) (response *model.TransactionRes
 			Message: result.Success.Message,
 		}, nil
 	case *proto.DepositRes_Failure:
-		return &model.TransactionResponse{
-			Status:  int(result.Failure.FailureCode),
-			Message: result.Failure.FailureMessage,
-		}, nil
-
+		return nil, ErrSmthWentWrong
 	default:
-		return nil, errors.New("Something went wrong")
-
+		return nil, ErrSmthWentWrong
 	}
 }
 
 func (a *DefaultService) Transfer(to string, amount float32) (response *model.TransactionResponse, err error) {
-
 	if to == "" {
-		return nil, errors.New("To field is required")
+		return nil, ErrMissingData
 	}
 
 	md := metadata.New(map[string]string{"userId": "67fbd5d9fc7128b743d265b7"})
@@ -104,10 +106,7 @@ func (a *DefaultService) Transfer(to string, amount float32) (response *model.Tr
 	})
 
 	if err != nil {
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: "Something went wrong",
-		}, nil
+		return nil, ErrSmthWentWrong
 	}
 
 	switch result := res.Result.(type) {
@@ -117,10 +116,13 @@ func (a *DefaultService) Transfer(to string, amount float32) (response *model.Tr
 			Message: result.Success.Message,
 		}, nil
 	case *proto.TransferRes_Failure:
-		return nil, errors.New(result.Failure.FailureMessage)
-
+		if result.Failure.FailureCode == proto.T_FailureCode_T_MISSING_DATA {
+			return nil, ErrMissingData
+		} else if result.Failure.FailureCode == proto.T_FailureCode_T_INSUFFICIENT_BALANCE {
+			return nil, ErrInSufficientFunds
+		}
+		return nil, ErrSmthWentWrong
 	default:
-		return nil, errors.New("Something went wrong")
-
+		return nil, ErrSmthWentWrong
 	}
 }

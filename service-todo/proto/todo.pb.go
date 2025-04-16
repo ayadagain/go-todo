@@ -26,6 +26,9 @@ type T_FailureCode int32
 const (
 	T_FailureCode_T_GENERAL_ERROR        T_FailureCode = 0
 	T_FailureCode_T_INSUFFICIENT_BALANCE T_FailureCode = 1
+	T_FailureCode_T_AMOUNT_EMPTY         T_FailureCode = 2
+	T_FailureCode_T_MISSING_DATA         T_FailureCode = 3
+	T_FailureCode_T_NETWORK_ERROR        T_FailureCode = 4
 )
 
 // Enum value maps for T_FailureCode.
@@ -33,10 +36,16 @@ var (
 	T_FailureCode_name = map[int32]string{
 		0: "T_GENERAL_ERROR",
 		1: "T_INSUFFICIENT_BALANCE",
+		2: "T_AMOUNT_EMPTY",
+		3: "T_MISSING_DATA",
+		4: "T_NETWORK_ERROR",
 	}
 	T_FailureCode_value = map[string]int32{
 		"T_GENERAL_ERROR":        0,
 		"T_INSUFFICIENT_BALANCE": 1,
+		"T_AMOUNT_EMPTY":         2,
+		"T_MISSING_DATA":         3,
+		"T_NETWORK_ERROR":        4,
 	}
 )
 
@@ -699,10 +708,13 @@ const file_todo_proto_rawDesc = "" +
 	"\aSuccess\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
-	"\x06result*@\n" +
+	"\x06result*}\n" +
 	"\rT_FailureCode\x12\x13\n" +
 	"\x0fT_GENERAL_ERROR\x10\x00\x12\x1a\n" +
-	"\x16T_INSUFFICIENT_BALANCE\x10\x012\xac\x01\n" +
+	"\x16T_INSUFFICIENT_BALANCE\x10\x01\x12\x12\n" +
+	"\x0eT_AMOUNT_EMPTY\x10\x02\x12\x12\n" +
+	"\x0eT_MISSING_DATA\x10\x03\x12\x13\n" +
+	"\x0fT_NETWORK_ERROR\x10\x042\xac\x01\n" +
 	"\vTodoService\x121\n" +
 	"\aDeposit\x12\x11.proto.DepositReq\x1a\x11.proto.DepositRes\"\x00\x124\n" +
 	"\bWithdraw\x12\x12.proto.WithdrawReq\x1a\x12.proto.WithdrawRes\"\x00\x124\n" +
