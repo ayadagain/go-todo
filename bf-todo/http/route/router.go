@@ -57,23 +57,11 @@ func (r *Router) withdraw(c *gin.Context) {
 	}
 
 	res, err := r.todoService.Withdraw(postData.Amount)
-
 	if err != nil {
 		res := &model.HttpResponse{
 			Message: "fail",
 			Status:  http.StatusBadRequest,
 			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
-		return
-	}
-
-	if res.Status == -1 {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    res.Message,
 		}
 
 		c.IndentedJSON(http.StatusOK, res)
@@ -87,8 +75,6 @@ func (r *Router) withdraw(c *gin.Context) {
 	})
 
 	return
-
-	//r.todoService.Client.Withdraw()
 }
 func (r *Router) deposit(c *gin.Context) {
 	var postData model.Transaction
@@ -122,17 +108,6 @@ func (r *Router) deposit(c *gin.Context) {
 			Message: "fail",
 			Status:  http.StatusBadRequest,
 			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
-		return
-	}
-
-	if res.Status == -1 {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    res.Message,
 		}
 
 		c.IndentedJSON(http.StatusOK, res)
@@ -180,17 +155,6 @@ func (r *Router) transfer(c *gin.Context) {
 			Message: "fail",
 			Status:  http.StatusBadRequest,
 			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
-		return
-	}
-
-	if res.Status == -1 {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    res.Message,
 		}
 
 		c.IndentedJSON(http.StatusOK, res)

@@ -6,6 +6,7 @@ import (
 	"assm/bf-todo/model"
 	"assm/service-todo/proto"
 	"context"
+	"errors"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -24,22 +25,15 @@ func NewDefaultService(serviceContext ctx.ServiceCtx) *DefaultService {
 
 func (a *DefaultService) Withdraw(amount float32) (response *model.TransactionResponse, err error) {
 	if amount < 0 {
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: "Cannot send negative amount",
-		}, nil
+		return nil, errors.New("amount must be greater than zero")
 	}
 
 	md := metadata.New(map[string]string{"userId": "67fbd5d9fc7128b743d265b7"})
 	ctxWithMd := metadata.NewOutgoingContext(context.Background(), md)
 
 	res, err := a.TodoGrpcClient.Client.Withdraw(ctxWithMd, &proto.WithdrawReq{Amount: amount})
-
 	if err != nil {
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: "Something went wrong",
-		}, nil
+		return nil, errors.New("fail to establish transaction")
 	}
 
 	switch result := res.Result.(type) {
@@ -50,16 +44,11 @@ func (a *DefaultService) Withdraw(amount float32) (response *model.TransactionRe
 		}, nil
 
 	case *proto.WithdrawRes_Failure:
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: result.Failure.FailureMessage,
-		}, nil
+		return nil, errors.New(result.Failure.FailureMessage)
 	}
 
-	return &model.TransactionResponse{
-		Status:  -1,
-		Message: "Something went wrong",
-	}, nil
+	return nil, errors.New("Something went wrong")
+
 }
 
 func (a *DefaultService) Deposit(amount float32) (response *model.TransactionResponse, err error) {
@@ -95,20 +84,15 @@ func (a *DefaultService) Deposit(amount float32) (response *model.TransactionRes
 		}, nil
 
 	default:
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: "Something went wrong",
-		}, nil
+		return nil, errors.New("Something went wrong")
+
 	}
 }
 
 func (a *DefaultService) Transfer(to string, amount float32) (response *model.TransactionResponse, err error) {
 
 	if to == "" {
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: "To field is required",
-		}, nil
+		return nil, errors.New("To field is required")
 	}
 
 	md := metadata.New(map[string]string{"userId": "67fbd5d9fc7128b743d265b7"})
@@ -133,15 +117,10 @@ func (a *DefaultService) Transfer(to string, amount float32) (response *model.Tr
 			Message: result.Success.Message,
 		}, nil
 	case *proto.TransferRes_Failure:
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: result.Failure.FailureMessage,
-		}, nil
+		return nil, errors.New(result.Failure.FailureMessage)
 
 	default:
-		return &model.TransactionResponse{
-			Status:  -1,
-			Message: "Something went wrong",
-		}, nil
+		return nil, errors.New("Something went wrong")
+
 	}
 }
