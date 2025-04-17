@@ -234,7 +234,6 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 
 			kMessageBytes, err := bson.Marshal(kMessage)
 			if err != nil {
-				fmt.Println("damn bro: ", err.Error())
 				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
 					FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
 					FailureMessage: "Something went wrong",
@@ -255,9 +254,6 @@ func (s *Server) Transfer(ctx context.Context, req *proto.TransferReq) (res *pro
 			}}}, nil
 
 		case *paymentProto.BalanceRes_Failure:
-
-			fmt.Println("testing.....: ", result.Failure)
-
 			if result.Failure.FailureCode == paymentProto.FailureCode_MISSING_DATA {
 				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
 					FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
