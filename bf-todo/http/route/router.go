@@ -29,120 +29,77 @@ func (r *Router) Install(ginEngine *gin.Engine) {
 	router.POST("/transfer", r.transfer)
 }
 
+func newBadRequestResponse(c *gin.Context, message string) {
+	c.AbortWithStatusJSON(http.StatusBadRequest, &model.HttpResponse{
+		Status:  http.StatusBadRequest,
+		Message: message,
+		Data:    nil,
+	})
+}
+
+func newSuccessResponse(c *gin.Context, message string, data interface{}) {
+	c.AbortWithStatusJSON(http.StatusOK, &model.HttpResponse{
+		Status:  http.StatusOK,
+		Message: message,
+		Data:    data,
+	})
+}
+
 func (r *Router) withdraw(c *gin.Context) {
 	var postData model.Transaction
 
 	if err := c.BindJSON(&postData); err != nil {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
+		newBadRequestResponse(c, err.Error())
 		return
 	}
 
 	if postData.Amount < 0 {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    "Cannot send negative amount",
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
+		newBadRequestResponse(c, "Cannot send negative amount")
 		return
 	}
 
 	res, err := r.todoService.Withdraw(postData.Amount)
 	if err != nil {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
+		newBadRequestResponse(c, err.Error())
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, &model.HttpResponse{
-		Message: "success",
-		Status:  http.StatusOK,
-		Data:    res,
-	})
-
+	newSuccessResponse(c, "success", res)
 	return
 }
 func (r *Router) deposit(c *gin.Context) {
 	var postData model.Transaction
 
 	if err := c.BindJSON(&postData); err != nil {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
+		newBadRequestResponse(c, err.Error())
 		return
 	}
 
 	if postData.Amount < 0 {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    "Cannot send negative amount",
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
+		newBadRequestResponse(c, "Cannot send negative amount")
 		return
 	}
 
 	res, err := r.todoService.Deposit(postData.Amount)
 
 	if err != nil {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(http.StatusOK, res)
+		newBadRequestResponse(c, err.Error())
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, &model.HttpResponse{
-		Message: "success",
-		Status:  http.StatusOK,
-		Data:    res,
-	})
-
+	newSuccessResponse(c, "success", res)
 	return
-
 }
 func (r *Router) transfer(c *gin.Context) {
 	var postData model.Transaction
 
 	if err := c.BindJSON(&postData); err != nil {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    err.Error(),
-		}
-
-		c.IndentedJSON(res.Status, res)
+		newBadRequestResponse(c, err.Error())
 		return
 	}
 
 	if postData.To == "" {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    "To field is required",
-		}
-
-		c.IndentedJSON(res.Status, res)
+		newBadRequestResponse(c, "To field is required")
 		return
 	}
 
@@ -154,6 +111,8 @@ func (r *Router) transfer(c *gin.Context) {
 			Status:  http.StatusBadRequest,
 			Data:    err.Error(),
 		}
+
+		newBadRequestResponse(c, err.Error())
 
 		c.IndentedJSON(http.StatusOK, res)
 		return

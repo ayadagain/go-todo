@@ -1,0 +1,25 @@
+services:
+  bff:
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: bf-todo/Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+  service-payment:
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: service-payment/Dockerfile
+    ports:
+      - "9001:9001"
+
+  service-todo:
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: service-todo/Dockerfile
+    ports:
+      - "9000:9000"
