@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,63 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
-	"os"
 )
-
-type TodoModel struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	Data      string             `bson:"data"`
-	CreatedBy string             `bson:"created_by"`
-}
-
-type UserModel struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	balance  float64            `bson:"balance"`
-	username string             `bson:"username"`
-}
-
-type PaymentsModel struct {
-	ID     primitive.ObjectID `bson:"_id,omitempty"`
-	from   primitive.ObjectID `bson:"from"`
-	to     primitive.ObjectID `bson:"to"`
-	amount float64            `bson:"amount"`
-}
-
-func Conn() *mongo.Client {
-	_ = godotenv.Load("../.env")
-
-	mongoUri := os.Getenv("MONGO_URI")
-	collectionName := os.Getenv("MONGO_COLLECTION_NAME")
-
-	if mongoUri == "" {
-		panic("env variable MONGO_URI not found")
-	}
-
-	if collectionName == "" {
-		panic("env variable MONGO_COLLECTION_NAME not found")
-	}
-
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoUri))
-
-	if err != nil {
-		fmt.Println("Couldn't connect to the database. \n verbose: ", err)
-		panic("Couldn't connect to the database.")
-	}
-
-	err = client.Ping(context.TODO(), nil)
-
-	if err != nil {
-		fmt.Println("Database is offline. \n verbose: ", err)
-		panic("Database is offline.")
-	}
-
-	return client
-}
-
-func Collc(client *mongo.Client, collcName string) *mongo.Collection {
-	collec := client.Database("halan").Collection(collcName)
-	return collec
-}
 
 func GetBalance(collection *mongo.Collection, userId string) float64 {
 	objectID, err := primitive.ObjectIDFromHex(userId)

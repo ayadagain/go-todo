@@ -9,6 +9,9 @@ const (
 	kafkaOffsetReset = "KAFKA_OFFSET_RESET"
 	kafkaTopic       = "KAFKA_TOPIC"
 	mongoUri         = "MONGO_URI"
+	mongoCollection  = "MONGO_COLLECTION"
+	mongoDatabase    = "MONGO_DATABASE"
+	grpcPort         = "GRPC_PORT"
 )
 
 type Config struct {
@@ -18,6 +21,9 @@ type Config struct {
 	kafkaOffsetReset string
 	kafkaTopic       string
 	mongoUri         string
+	mongoCollection  string
+	mongoDatabase    string
+	grpcPort         string
 }
 
 func loadConfig() *Config {
@@ -28,6 +34,9 @@ func loadConfig() *Config {
 		kafkaOffsetReset: os.Getenv(kafkaOffsetReset),
 		kafkaTopic:       os.Getenv(kafkaTopic),
 		mongoUri:         os.Getenv(mongoUri),
+		mongoCollection:  os.Getenv(mongoCollection),
+		mongoDatabase:    os.Getenv(mongoDatabase),
+		grpcPort:         os.Getenv(grpcPort),
 	}
 }
 
@@ -53,4 +62,16 @@ func (c *Config) getKafkaTopic() string {
 
 func (c *Config) getMongoUri() string {
 	return c.mongoUri
+}
+
+func (c *Config) getMongoCollection() string {
+	return c.mongoCollection
+}
+
+func (c *Config) getMongoDatabase() string {
+	return c.mongoDatabase
+}
+
+func (c *Config) getGrpcPort() string {
+	return c.grpcPort
 }
