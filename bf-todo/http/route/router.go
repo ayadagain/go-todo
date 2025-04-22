@@ -106,24 +106,10 @@ func (r *Router) transfer(c *gin.Context) {
 	res, err := r.todoService.Transfer(postData.To, postData.Amount)
 
 	if err != nil {
-		res := &model.HttpResponse{
-			Message: "fail",
-			Status:  http.StatusBadRequest,
-			Data:    err.Error(),
-		}
-
 		newBadRequestResponse(c, err.Error())
-
-		c.IndentedJSON(http.StatusOK, res)
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, &model.HttpResponse{
-		Message: "success",
-		Status:  http.StatusOK,
-		Data:    res,
-	})
-
+	newSuccessResponse(c, "success", res)
 	return
-
 }
