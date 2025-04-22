@@ -5,7 +5,6 @@ import (
 	"assm/service-payment/proto"
 	"assm/service-payment/service"
 	"context"
-	"fmt"
 )
 
 type DefaultPaymentGRPCServer struct {
@@ -22,6 +21,5 @@ func NewDefaultPaymentGRPCServer(serviceContext ctx.ServiceCtx) *DefaultPaymentG
 }
 
 func (o *DefaultPaymentGRPCServer) BalanceInquiry(ctx context.Context, req *proto.BalanceReq) (res *proto.BalanceRes, err error) {
-	fmt.Println("Received request: ", req)
 	return o.paymentService.BalanceInquiry(ctx, req)
 }

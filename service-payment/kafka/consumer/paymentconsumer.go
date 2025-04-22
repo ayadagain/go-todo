@@ -87,10 +87,10 @@ func (pc *PaymentConsumer) Run() {
 }
 
 func (pc *PaymentConsumer) Shutdown() {
-	log.Println("Shutting down Consumer service")
+	log.Println("Shutting down Consumer server")
 	err := pc.ServiceContext.KafkaConsumer().Close()
 	if err != nil {
-		fmt.Println("Error shutting down Consumer service")
+		fmt.Println("Error shutting down Consumer server")
 		return
 	}
 }

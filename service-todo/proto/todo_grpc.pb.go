@@ -24,7 +24,7 @@ const (
 	TodoService_Transfer_FullMethodName = "/proto.TodoService/Transfer"
 )
 
-// TodoServiceClient is the client API for TodoService service.
+// TodoServiceClient is the client API for TodoService server.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TodoServiceClient interface {
@@ -71,7 +71,7 @@ func (c *todoServiceClient) Transfer(ctx context.Context, in *TransferReq, opts 
 	return out, nil
 }
 
-// TodoServiceServer is the server API for TodoService service.
+// TodoServiceServer is the server API for TodoService server.
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility.
 type TodoServiceServer interface {
@@ -100,7 +100,7 @@ func (UnimplementedTodoServiceServer) Transfer(context.Context, *TransferReq) (*
 func (UnimplementedTodoServiceServer) mustEmbedUnimplementedTodoServiceServer() {}
 func (UnimplementedTodoServiceServer) testEmbeddedByValue()                     {}
 
-// UnsafeTodoServiceServer may be embedded to opt out of forward compatibility for this service.
+// UnsafeTodoServiceServer may be embedded to opt out of forward compatibility for this server.
 // Use of this interface is not recommended, as added methods to TodoServiceServer will
 // result in compilation errors.
 type UnsafeTodoServiceServer interface {
@@ -172,7 +172,7 @@ func _TodoService_Transfer_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-// TodoService_ServiceDesc is the grpc.ServiceDesc for TodoService service.
+// TodoService_ServiceDesc is the grpc.ServiceDesc for TodoService server.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TodoService_ServiceDesc = grpc.ServiceDesc{
