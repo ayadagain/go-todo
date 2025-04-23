@@ -6,7 +6,6 @@ import (
 	"assm/service-payment/proto"
 	"assm/service-payment/server"
 	"fmt"
-	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 )
 
@@ -18,7 +17,6 @@ func createGRPCServer(serviceContext ctx.ServiceCtx) *grpc.Server {
 }
 
 func main() {
-	_ = godotenv.Load("../.env")
 	serviceContext := ctx.NewDefaultServiceCtx()
 	grpcServer := createGRPCServer(serviceContext)
 	kafkaConsumer := consumer.NewPaymentConsumer(serviceContext)

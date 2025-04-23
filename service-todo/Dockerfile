@@ -1,20 +1,26 @@
-FROM public.ecr.aws/docker/library/golang:1.24 as builder
+FROM golang:1.24.2 AS builder
 
-ENV CGO_ENABLED 1
-ENV GOFLAGS -mod=vendor
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    build-essential \
+    librdkafka-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV GOOS=linux
-ENV GO111MODULE=on
-
+ENV CGO_ENABLED=1
 
 WORKDIR /st
-
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -a -installsuffix cgo -o ./bin/st ./service-payment/
+RUN go build -a -installsuffix cgo -o ./bin/st ./service-todo/
 
 FROM alpine:latest
+
+RUN apk add --update --no-cache ca-certificates librdkafka libc6-compat
+
 WORKDIR /st
 
 COPY --from=builder /st/bin/st .
