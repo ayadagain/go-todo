@@ -17,20 +17,20 @@ import (
 type DefaultBankingService struct {
 	ServiceContext ctx.ServiceCtx
 	grpcClient     *client.PaymentClient
+	kafkaProducer  *kafka.Producer
+	kafkaTopic     string
 }
 
 func NewDefaultBankingService(serviceContext ctx.ServiceCtx) *DefaultBankingService {
-	grpcClient := client.NewPaymentClient(serviceContext.GrpcClient())
 	return &DefaultBankingService{
 		ServiceContext: serviceContext,
-		grpcClient:     grpcClient,
+		grpcClient:     client.NewPaymentClient(serviceContext.GrpcClient()),
+		kafkaProducer:  serviceContext.KafkaProducer(),
+		kafkaTopic:     serviceContext.Config().GetKafkaTopic(),
 	}
 }
 
 func (s DefaultBankingService) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *proto.WithdrawRes, err error) {
-	kafkaP := s.ServiceContext.KafkaProducer()
-	kafkaTopic := s.ServiceContext.Config().GetKafkaTopic()
-
 	if req.Amount == 0 {
 		return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
 			FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
@@ -86,9 +86,9 @@ func (s DefaultBankingService) Withdraw(ctx context.Context, req *proto.Withdraw
 				}}}, nil
 			}
 
-			err = kafkaP.Produce(&kafka.Message{
+			err = s.kafkaProducer.Produce(&kafka.Message{
 				TopicPartition: kafka.TopicPartition{
-					Topic:     &kafkaTopic,
+					Topic:     &s.kafkaTopic,
 					Partition: kafka.PartitionAny,
 				},
 				Value: kMessageBytes,
@@ -140,9 +140,6 @@ func (s DefaultBankingService) Deposit(ctx context.Context, req *proto.DepositRe
 		return nil, status.Errorf(codes.InvalidArgument, "amount is empty")
 	}
 
-	kafkaP := s.ServiceContext.KafkaProducer()
-	kafkaTopic := s.ServiceContext.Config().GetKafkaTopic()
-
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		userId := md["userid"]
 
@@ -168,9 +165,9 @@ func (s DefaultBankingService) Deposit(ctx context.Context, req *proto.DepositRe
 			}}}, nil
 		}
 
-		err = kafkaP.Produce(&kafka.Message{
+		err = s.kafkaProducer.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{
-				Topic:     &kafkaTopic,
+				Topic:     &s.kafkaTopic,
 				Partition: kafka.PartitionAny,
 			},
 			Value: kMessageBytes,
@@ -199,9 +196,6 @@ func (s DefaultBankingService) Transfer(ctx context.Context, req *proto.Transfer
 	if req.Amount == 0 || req.To == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "incomplete request")
 	}
-
-	kafkaP := s.ServiceContext.KafkaProducer()
-	kafkaTopic := s.ServiceContext.Config().GetKafkaTopic()
 
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		userId := md["userid"]
@@ -251,9 +245,9 @@ func (s DefaultBankingService) Transfer(ctx context.Context, req *proto.Transfer
 				}}}, nil
 			}
 
-			err = kafkaP.Produce(&kafka.Message{
+			err = s.kafkaProducer.Produce(&kafka.Message{
 				TopicPartition: kafka.TopicPartition{
-					Topic:     &kafkaTopic,
+					Topic:     &s.kafkaTopic,
 					Partition: kafka.PartitionAny,
 				},
 				Value: kMessageBytes,

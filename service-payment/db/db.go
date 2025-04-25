@@ -12,30 +12,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
+	"reflect"
 )
 
-func GetBalance(collection *mongo.Collection, userId string) float64 {
-	objectID, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		log.Fatalf("Failed to convert string to ObjectID: %v", err)
-	}
-
-	cursor := collection.FindOne(context.Background(), bson.D{
-		{"_id", objectID},
-	})
-
-	var result bson.M
-
-	if err := cursor.Decode(&result); err != nil {
-		log.Fatalf("Failed to convert string to ObjectID: %v", err)
-	}
-
-	return result["balance"].(float64)
-}
-
 func EditBalance(client *mongo.Client, collection *mongo.Collection, userId string, amount float32) bool {
-	wc := writeconcern.Majority()
-	txnOptions := options.Transaction().SetWriteConcern(wc)
+	txnOptions := options.Transaction().SetWriteConcern(writeconcern.Majority())
 
 	objectID, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
@@ -75,8 +56,7 @@ func EditBalance(client *mongo.Client, collection *mongo.Collection, userId stri
 }
 
 func Transfer(client *mongo.Client, userCollection *mongo.Collection, from string, to string, amount float32) (bool, error) {
-	wc := writeconcern.Majority()
-	txnOptions := options.Transaction().SetWriteConcern(wc)
+	txnOptions := options.Transaction().SetWriteConcern(writeconcern.Majority())
 
 	fromUserId, err := primitive.ObjectIDFromHex(from)
 	if err != nil {
@@ -124,6 +104,8 @@ func Transfer(client *mongo.Client, userCollection *mongo.Collection, from strin
 	if err := toCursor.Decode(&toUser); err != nil {
 		return false, status.Errorf(codes.Internal, "Database error: %v", err)
 	}
+
+	fmt.Println("fromUser ", fromUser["balance"], " typeof: ", reflect.TypeOf(fromUser["balance"]))
 
 	fromBalance := float32(fromUser["balance"].(float64))
 

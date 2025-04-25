@@ -24,7 +24,3 @@ func loadConf() *Config {
 func (c *Config) GetSecretKey() string {
 	return c.secretKey
 }
-
-func (c *Config) GetGrpcHost() string {
-	return c.grpcHost
-}

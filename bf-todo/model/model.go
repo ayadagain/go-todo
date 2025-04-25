@@ -7,7 +7,7 @@ type HttpResponse struct {
 }
 
 type Transaction struct {
-	Amount float32 `json:"amount"`
+	Amount float32 `json:"amount" binding:"required,gt=0"`
 	To     string  `json:"to"`
 }
 

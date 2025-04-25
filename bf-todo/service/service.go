@@ -15,7 +15,6 @@ var (
 	ErrSmthWentWrong     = errors.New("something went wrong")
 	ErrNegVals           = errors.New("cannot send negative amount")
 	ErrInSufficientFunds = errors.New("insufficient funds")
-	ErrAmountEmpty       = errors.New("amount is empty")
 	ErrMissingData       = errors.New("missing data")
 )
 
@@ -25,10 +24,9 @@ type DefaultService struct {
 }
 
 func NewDefaultService(serviceContext ctx.ServiceCtx) *DefaultService {
-	todoGrpcClient := client.NewTodoClient(serviceContext.GrpcClient())
 	return &DefaultService{
 		ServiceContext: serviceContext,
-		TodoGrpcClient: todoGrpcClient,
+		TodoGrpcClient: client.NewTodoClient(serviceContext.GrpcClient()),
 	}
 }
 

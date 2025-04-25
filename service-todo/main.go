@@ -6,7 +6,9 @@ import (
 	"assm/service-todo/proto"
 	"assm/service-todo/server"
 	"fmt"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
+	"os"
 )
 
 func createGRPCServer(serviceContext ctx.ServiceCtx) *grpc.Server {
@@ -17,6 +19,9 @@ func createGRPCServer(serviceContext ctx.ServiceCtx) *grpc.Server {
 }
 
 func main() {
+	if os.Getenv("BUILD_CONTEXT") == "" {
+		_ = godotenv.Load("../.env")
+	}
 	serviceCtx := ctx.NewDefaultServiceCtx()
 	grpcServer := createGRPCServer(serviceCtx)
 	kafkaProducer := producer.NewTodoProducer(serviceCtx)

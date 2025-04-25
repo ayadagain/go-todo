@@ -25,18 +25,6 @@ func loadConfig() *Config {
 	}
 }
 
-func (c *Config) getTodoGrpcPort() string {
-	return c.todoGrpcPort
-}
-
-func (c *Config) getKafkaServer() string {
-	return c.kafkaServer
-}
-
-func (c *Config) getPaymentGrpcHost() string {
-	return c.paymentGrpcHost
-}
-
 func (c *Config) GetKafkaTopic() string {
 	return c.kafkaTopic
 }

@@ -21,20 +21,17 @@ func NewPaymentConsumer(serviceContext ctx.ServiceCtx) *PaymentConsumer {
 
 func (pc *PaymentConsumer) Run() {
 	c := pc.ServiceContext.KafkaConsumer()
+	mongoClient := pc.ServiceContext.MongoClient()
+	mongoCollection := pc.ServiceContext.MongoCollection()
+
 	for {
 		msg, err := c.ReadMessage(time.Second)
-
-		mongoClient := pc.ServiceContext.MongoClient()
-		mongoCollection := pc.ServiceContext.MongoCollection()
-
 		if err == nil {
 			var event model.KafkaEvent
 			err := bson.Unmarshal(msg.Value, &event)
 			if err != nil {
 				fmt.Println("Error unmarshalling message: ", err)
 			}
-
-			fmt.Println("got this message from kafka: ", event)
 
 			switch event.Event {
 			case "Withdrawal":

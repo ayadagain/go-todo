@@ -14,10 +14,9 @@ type Router struct {
 }
 
 func NewRouter(serviceCtx ctx.ServiceCtx) *Router {
-	ser := service.NewDefaultService(serviceCtx)
 	return &Router{
 		serviceContext: serviceCtx,
-		todoService:    ser,
+		todoService:    service.NewDefaultService(serviceCtx),
 	}
 }
 
@@ -47,18 +46,13 @@ func newSuccessResponse(c *gin.Context, message string, data interface{}) {
 
 func (r *Router) withdraw(c *gin.Context) {
 	var postData model.Transaction
-
 	if err := c.BindJSON(&postData); err != nil {
 		newBadRequestResponse(c, err.Error())
 		return
 	}
 
-	if postData.Amount < 0 {
-		newBadRequestResponse(c, "Cannot send negative amount")
-		return
-	}
-
 	res, err := r.todoService.Withdraw(postData.Amount)
+
 	if err != nil {
 		newBadRequestResponse(c, err.Error())
 		return
@@ -72,11 +66,6 @@ func (r *Router) deposit(c *gin.Context) {
 
 	if err := c.BindJSON(&postData); err != nil {
 		newBadRequestResponse(c, err.Error())
-		return
-	}
-
-	if postData.Amount < 0 {
-		newBadRequestResponse(c, "Cannot send negative amount")
 		return
 	}
 

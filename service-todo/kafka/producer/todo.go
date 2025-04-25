@@ -16,9 +16,7 @@ func NewTodoProducer(serviceContext ctx.ServiceCtx) *TodoProducer {
 }
 
 func (tp *TodoProducer) Run() {
-	kp := tp.ServiceContext.KafkaProducer()
-
-	for e := range kp.Events() {
+	for e := range tp.ServiceContext.KafkaProducer().Events() {
 		switch ev := (e).(type) {
 		case *kafka.Message:
 			if ev.TopicPartition.Error != nil {

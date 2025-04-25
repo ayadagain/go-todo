@@ -39,8 +39,7 @@ func (s DefaultPaymentService) GetBalance(userId string) (float64, error) {
 }
 
 func (s DefaultPaymentService) EditBalance(userId string, amount float64) (bool, error) {
-	wc := writeconcern.Majority()
-	txnOptions := options.Transaction().SetWriteConcern(wc)
+	txnOptions := options.Transaction().SetWriteConcern(writeconcern.Majority())
 
 	objectID, err := primitive.ObjectIDFromHex(userId)
 
