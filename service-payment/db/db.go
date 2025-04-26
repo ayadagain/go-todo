@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
-	"reflect"
 )
 
 func EditBalance(client *mongo.Client, collection *mongo.Collection, userId string, amount float32) bool {
@@ -104,8 +103,6 @@ func Transfer(client *mongo.Client, userCollection *mongo.Collection, from strin
 	if err := toCursor.Decode(&toUser); err != nil {
 		return false, status.Errorf(codes.Internal, "Database error: %v", err)
 	}
-
-	fmt.Println("fromUser ", fromUser["balance"], " typeof: ", reflect.TypeOf(fromUser["balance"]))
 
 	fromBalance := float32(fromUser["balance"].(float64))
 

@@ -98,6 +98,13 @@ func NewKafkaConn(ctx Config) *kafka.Consumer {
 		panic("failed to create kafka consumer: " + err.Error())
 	}
 
+	metadata, err := c.GetMetadata(nil, true, 5000)
+	if err != nil {
+		fmt.Printf("Failed to get Kafka metadata: %s\n", err.Error())
+	} else {
+		fmt.Printf("Successfully connected to Kafka cluster with %d broker(s)\n", len(metadata.Brokers))
+	}
+
 	return c
 }
 
