@@ -66,14 +66,14 @@ func (ctx *defaultServiceCtx) ShutdownHook(shutdownFuncs ...func()) {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 		<-c
+		ctx.shutdown()
 		for _, f := range shutdownFuncs {
 			f()
 		}
 	}()
 }
 
-func (ctx *defaultServiceCtx) Shutdown() {
-	ctx.kafkaProducer.Close()
+func (ctx *defaultServiceCtx) shutdown() {
 	err := ctx.tcpListener.Close()
 	if err != nil {
 		return

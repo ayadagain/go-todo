@@ -22,7 +22,7 @@ const (
 	PaymentService_BalanceInquiry_FullMethodName = "/proto.PaymentService/BalanceInquiry"
 )
 
-// PaymentServiceClient is the client API for PaymentService server.
+// PaymentServiceClient is the client API for PaymentService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PaymentServiceClient interface {
@@ -47,7 +47,7 @@ func (c *paymentServiceClient) BalanceInquiry(ctx context.Context, in *BalanceRe
 	return out, nil
 }
 
-// PaymentServiceServer is the server API for PaymentService server.
+// PaymentServiceServer is the server API for PaymentService service.
 // All implementations must embed UnimplementedPaymentServiceServer
 // for forward compatibility.
 type PaymentServiceServer interface {
@@ -68,7 +68,7 @@ func (UnimplementedPaymentServiceServer) BalanceInquiry(context.Context, *Balanc
 func (UnimplementedPaymentServiceServer) mustEmbedUnimplementedPaymentServiceServer() {}
 func (UnimplementedPaymentServiceServer) testEmbeddedByValue()                        {}
 
-// UnsafePaymentServiceServer may be embedded to opt out of forward compatibility for this server.
+// UnsafePaymentServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to PaymentServiceServer will
 // result in compilation errors.
 type UnsafePaymentServiceServer interface {
@@ -104,7 +104,7 @@ func _PaymentService_BalanceInquiry_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-// PaymentService_ServiceDesc is the grpc.ServiceDesc for PaymentService server.
+// PaymentService_ServiceDesc is the grpc.ServiceDesc for PaymentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var PaymentService_ServiceDesc = grpc.ServiceDesc{

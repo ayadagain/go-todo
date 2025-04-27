@@ -516,7 +516,6 @@ func (*TransferRes_Failure) isTransferRes_Result() {}
 
 type DepositRes_Success struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -552,13 +551,6 @@ func (*DepositRes_Success) Descriptor() ([]byte, []int) {
 	return file_todo_proto_rawDescGZIP(), []int{2, 0}
 }
 
-func (x *DepositRes_Success) GetStatus() int32 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
 func (x *DepositRes_Success) GetMessage() string {
 	if x != nil {
 		return x.Message
@@ -568,7 +560,6 @@ func (x *DepositRes_Success) GetMessage() string {
 
 type WithdrawRes_Success struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -604,13 +595,6 @@ func (*WithdrawRes_Success) Descriptor() ([]byte, []int) {
 	return file_todo_proto_rawDescGZIP(), []int{4, 0}
 }
 
-func (x *WithdrawRes_Success) GetStatus() int32 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
 func (x *WithdrawRes_Success) GetMessage() string {
 	if x != nil {
 		return x.Message
@@ -620,7 +604,6 @@ func (x *WithdrawRes_Success) GetMessage() string {
 
 type TransferRes_Success struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        int32                  `protobuf:"varint,1,opt,name=Status,proto3" json:"Status,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=Message,proto3" json:"Message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -656,13 +639,6 @@ func (*TransferRes_Success) Descriptor() ([]byte, []int) {
 	return file_todo_proto_rawDescGZIP(), []int{6, 0}
 }
 
-func (x *TransferRes_Success) GetStatus() int32 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
 func (x *TransferRes_Success) GetMessage() string {
 	if x != nil {
 		return x.Message
@@ -681,32 +657,29 @@ const file_todo_proto_rawDesc = "" +
 	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"k\n" +
 	"\tT_Failure\x126\n" +
 	"\vfailureCode\x18\x01 \x01(\x0e2\x14.proto.T_FailureCodeR\vfailureCode\x12&\n" +
-	"\x0efailureMessage\x18\x02 \x01(\tR\x0efailureMessage\"\xb8\x01\n" +
+	"\x0efailureMessage\x18\x02 \x01(\tR\x0efailureMessage\"\xa0\x01\n" +
 	"\n" +
 	"DepositRes\x125\n" +
 	"\asuccess\x18\x01 \x01(\v2\x19.proto.DepositRes.SuccessH\x00R\asuccess\x12,\n" +
-	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a;\n" +
-	"\aSuccess\x12\x16\n" +
-	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
+	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a#\n" +
+	"\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
 	"\x06result\"%\n" +
 	"\vWithdrawReq\x12\x16\n" +
-	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"\xba\x01\n" +
+	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\"\xa2\x01\n" +
 	"\vWithdrawRes\x126\n" +
 	"\asuccess\x18\x01 \x01(\v2\x1a.proto.WithdrawRes.SuccessH\x00R\asuccess\x12,\n" +
-	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a;\n" +
-	"\aSuccess\x12\x16\n" +
-	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
+	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a#\n" +
+	"\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
 	"\x06result\"5\n" +
 	"\vTransferReq\x12\x16\n" +
 	"\x06Amount\x18\x01 \x01(\x02R\x06Amount\x12\x0e\n" +
-	"\x02To\x18\x02 \x01(\tR\x02To\"\xba\x01\n" +
+	"\x02To\x18\x02 \x01(\tR\x02To\"\xa2\x01\n" +
 	"\vTransferRes\x126\n" +
 	"\asuccess\x18\x01 \x01(\v2\x1a.proto.TransferRes.SuccessH\x00R\asuccess\x12,\n" +
-	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a;\n" +
-	"\aSuccess\x12\x16\n" +
-	"\x06Status\x18\x01 \x01(\x05R\x06Status\x12\x18\n" +
+	"\afailure\x18\x02 \x01(\v2\x10.proto.T_FailureH\x00R\afailure\x1a#\n" +
+	"\aSuccess\x12\x18\n" +
 	"\aMessage\x18\x02 \x01(\tR\aMessageB\b\n" +
 	"\x06result*}\n" +
 	"\rT_FailureCode\x12\x13\n" +

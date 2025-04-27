@@ -30,6 +30,12 @@ func NewDefaultService(serviceContext ctx.ServiceCtx) *DefaultService {
 	}
 }
 
+func newTransactionResponse(message string) *model.TransactionResponse {
+	return &model.TransactionResponse{
+		Message: message,
+	}
+}
+
 func (a *DefaultService) Withdraw(amount float32) (response *model.TransactionResponse, err error) {
 	if amount < 0 {
 		return nil, ErrFailedTransaction
@@ -45,10 +51,7 @@ func (a *DefaultService) Withdraw(amount float32) (response *model.TransactionRe
 
 	switch result := res.Result.(type) {
 	case *proto.WithdrawRes_Success_:
-		return &model.TransactionResponse{
-			Status:  int(result.Success.Status),
-			Message: result.Success.Message,
-		}, nil
+		return newTransactionResponse(result.Success.Message), nil
 
 	case *proto.WithdrawRes_Failure:
 		if result.Failure.FailureCode == proto.T_FailureCode_T_MISSING_DATA {
@@ -79,10 +82,7 @@ func (a *DefaultService) Deposit(amount float32) (response *model.TransactionRes
 
 	switch result := res.Result.(type) {
 	case *proto.DepositRes_Success_:
-		return &model.TransactionResponse{
-			Status:  int(result.Success.Status),
-			Message: result.Success.Message,
-		}, nil
+		return newTransactionResponse(result.Success.Message), nil
 	case *proto.DepositRes_Failure:
 		return nil, ErrSmthWentWrong
 	default:
@@ -109,10 +109,7 @@ func (a *DefaultService) Transfer(to string, amount float32) (response *model.Tr
 
 	switch result := res.Result.(type) {
 	case *proto.TransferRes_Success_:
-		return &model.TransactionResponse{
-			Status:  int(result.Success.Status),
-			Message: result.Success.Message,
-		}, nil
+		return newTransactionResponse(result.Success.Message), nil
 	case *proto.TransferRes_Failure:
 		if result.Failure.FailureCode == proto.T_FailureCode_T_MISSING_DATA {
 			return nil, ErrMissingData

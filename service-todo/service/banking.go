@@ -5,6 +5,7 @@ import (
 	"assm/service-todo/client"
 	"assm/service-todo/ctx"
 	"assm/service-todo/proto"
+	"assm/service-todo/response"
 	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -32,20 +33,14 @@ func NewDefaultBankingService(serviceContext ctx.ServiceCtx) *DefaultBankingServ
 
 func (s DefaultBankingService) Withdraw(ctx context.Context, req *proto.WithdrawReq) (res *proto.WithdrawRes, err error) {
 	if req.Amount == 0 {
-		return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-			FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
-			FailureMessage: "Amount is empty",
-		}}}, nil
+		return response.WithdrawResFailure(proto.T_FailureCode_T_MISSING_DATA, "Amount is empty"), nil
 	}
 
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		userId := md["userid"]
 
 		if len(userId) == 0 {
-			return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
-				FailureMessage: "userId is empty",
-			}}}, nil
+			return response.WithdrawResFailure(proto.T_FailureCode_T_MISSING_DATA, "User Id is empty"), nil
 		}
 
 		md := metadata.New(map[string]string{"userId": userId[0]})
@@ -54,21 +49,13 @@ func (s DefaultBankingService) Withdraw(ctx context.Context, req *proto.Withdraw
 		existingBalance, err := s.grpcClient.Client.BalanceInquiry(ctxWithMd, &paymentProto.BalanceReq{})
 
 		if err != nil {
-			return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
-				FailureMessage: "Error calling the rpc",
-			}}}, nil
+			return response.WithdrawResFailure(proto.T_FailureCode_T_NETWORK_ERROR, "Error calling the rpc"), nil
 		}
 
 		switch result := existingBalance.Result.(type) {
 		case *paymentProto.BalanceRes_Success_:
 			if result.Success.Balance < req.Amount {
-				return &proto.WithdrawRes{
-					Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-						FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
-						FailureMessage: "Insufficient funds",
-					}},
-				}, nil
+				return response.WithdrawResFailure(proto.T_FailureCode_T_INSUFFICIENT_BALANCE, "Insufficient funds"), nil
 			}
 
 			kMessage := bson.D{
@@ -80,10 +67,7 @@ func (s DefaultBankingService) Withdraw(ctx context.Context, req *proto.Withdraw
 
 			kMessageBytes, err := bson.Marshal(kMessage)
 			if err != nil {
-				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-					FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-					FailureMessage: "Something went wrong",
-				}}}, nil
+				return response.WithdrawResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 			}
 
 			err = s.kafkaProducer.Produce(&kafka.Message{
@@ -95,44 +79,22 @@ func (s DefaultBankingService) Withdraw(ctx context.Context, req *proto.Withdraw
 			}, nil)
 
 			if err != nil {
-				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-					FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
-					FailureMessage: "Kafka network error",
-				}}}, nil
+				return response.WithdrawResFailure(proto.T_FailureCode_T_NETWORK_ERROR, "Kafka network error"), nil
 			}
 
-			return &proto.WithdrawRes{
-				Result: &proto.WithdrawRes_Success_{Success: &proto.WithdrawRes_Success{
-					Status:  1,
-					Message: fmt.Sprintf("You withdrew $%.2f from your balance. Your balance now is $%.2f", req.Amount, result.Success.Balance-req.Amount),
-				}},
-			}, nil
+			return response.WithdrawResSuccess(fmt.Sprintf("You withdrew $%.2f from your balance. Your balance now is $%.2f", req.Amount, result.Success.Balance-req.Amount)), nil
 
 		case *paymentProto.BalanceRes_Failure:
 			if result.Failure.FailureCode == paymentProto.FailureCode_MISSING_DATA {
-				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-					FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
-					FailureMessage: "Missing data",
-				}}}, nil
-
+				return response.WithdrawResFailure(proto.T_FailureCode_T_MISSING_DATA, "Missing data"), nil
 			} else if result.Failure.FailureCode == paymentProto.FailureCode_INSUFFICIENT_BALANCE {
-				return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-					FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
-					FailureMessage: "Insufficient Balance",
-				}}}, nil
+				return response.WithdrawResFailure(proto.T_FailureCode_T_INSUFFICIENT_BALANCE, "Insufficient Balance"), nil
 			}
-
-			return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-				FailureMessage: "Something went wrong",
-			}}}, nil
+			return response.WithdrawResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 		}
 	}
 
-	return &proto.WithdrawRes{Result: &proto.WithdrawRes_Failure{Failure: &proto.T_Failure{
-		FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-		FailureMessage: "Something went wrong",
-	}}}, nil
+	return response.WithdrawResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 }
 
 func (s DefaultBankingService) Deposit(ctx context.Context, req *proto.DepositReq) (res *proto.DepositRes, err error) {
@@ -144,10 +106,7 @@ func (s DefaultBankingService) Deposit(ctx context.Context, req *proto.DepositRe
 		userId := md["userid"]
 
 		if len(userId) == 0 {
-			return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
-				FailureMessage: "userId is empty",
-			}}}, nil
+			return response.DepositResFailure(proto.T_FailureCode_T_MISSING_DATA, "userId is empty"), nil
 		}
 
 		kMessage := bson.D{
@@ -159,10 +118,7 @@ func (s DefaultBankingService) Deposit(ctx context.Context, req *proto.DepositRe
 
 		kMessageBytes, err := bson.Marshal(kMessage)
 		if err != nil {
-			return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-				FailureMessage: "Something went wrong",
-			}}}, nil
+			return response.DepositResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 		}
 
 		err = s.kafkaProducer.Produce(&kafka.Message{
@@ -174,22 +130,13 @@ func (s DefaultBankingService) Deposit(ctx context.Context, req *proto.DepositRe
 		}, nil)
 
 		if err != nil {
-			return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
-				FailureMessage: "Kafka network error",
-			}}}, nil
+			return response.DepositResFailure(proto.T_FailureCode_T_NETWORK_ERROR, "Kafka network error"), nil
 		}
 
-		return &proto.DepositRes{Result: &proto.DepositRes_Success_{Success: &proto.DepositRes_Success{
-			Status:  1,
-			Message: fmt.Sprintf("You deposited $%.2f in your balance", req.Amount),
-		}}}, nil
+		return response.DepositResSuccess(fmt.Sprintf("You deposited $%.2f in your balance", req.Amount)), nil
 	}
 
-	return &proto.DepositRes{Result: &proto.DepositRes_Failure{Failure: &proto.T_Failure{
-		FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-		FailureMessage: "Something went wrong",
-	}}}, nil
+	return response.DepositResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 }
 
 func (s DefaultBankingService) Transfer(ctx context.Context, req *proto.TransferReq) (res *proto.TransferRes, err error) {
@@ -201,10 +148,7 @@ func (s DefaultBankingService) Transfer(ctx context.Context, req *proto.Transfer
 		userId := md["userid"]
 
 		if len(userId) == 0 {
-			return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
-				FailureMessage: "userId is empty",
-			}}}, nil
+			return response.TransferResFailure(proto.T_FailureCode_T_MISSING_DATA, "userId is empty"), nil
 		}
 
 		md := metadata.New(map[string]string{"userId": userId[0]})
@@ -213,21 +157,13 @@ func (s DefaultBankingService) Transfer(ctx context.Context, req *proto.Transfer
 		existingBalance, err := s.grpcClient.Client.BalanceInquiry(ctxWithMd, &paymentProto.BalanceReq{})
 
 		if err != nil {
-			return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_NETWORK_ERROR,
-				FailureMessage: "Error calling the rpc",
-			}}}, nil
+			return response.TransferResFailure(proto.T_FailureCode_T_NETWORK_ERROR, "Error calling the rpc"), nil
 		}
 
 		switch result := existingBalance.Result.(type) {
 		case *paymentProto.BalanceRes_Success_:
 			if result.Success.Balance < req.Amount {
-				return &proto.TransferRes{
-					Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-						FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
-						FailureMessage: "Insufficient funds",
-					}},
-				}, nil
+				return response.TransferResFailure(proto.T_FailureCode_T_INSUFFICIENT_BALANCE, "Insufficient funds"), nil
 			}
 
 			kMessage := bson.D{
@@ -239,10 +175,7 @@ func (s DefaultBankingService) Transfer(ctx context.Context, req *proto.Transfer
 
 			kMessageBytes, err := bson.Marshal(kMessage)
 			if err != nil {
-				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-					FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-					FailureMessage: "Something went wrong",
-				}}}, nil
+				return response.TransferResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 			}
 
 			err = s.kafkaProducer.Produce(&kafka.Message{
@@ -252,35 +185,18 @@ func (s DefaultBankingService) Transfer(ctx context.Context, req *proto.Transfer
 				},
 				Value: kMessageBytes,
 			}, nil)
-
-			return &proto.TransferRes{Result: &proto.TransferRes_Success_{Success: &proto.TransferRes_Success{
-				Status:  1,
-				Message: fmt.Sprintf("You have transferred $%.2f successfully.", req.Amount),
-			}}}, nil
-
+			return response.TransferResSuccess(fmt.Sprintf("You have transferred $%.2f successfully.", req.Amount)), nil
 		case *paymentProto.BalanceRes_Failure:
 			if result.Failure.FailureCode == paymentProto.FailureCode_MISSING_DATA {
-				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-					FailureCode:    proto.T_FailureCode_T_MISSING_DATA,
-					FailureMessage: "Missing data",
-				}}}, nil
+				return response.TransferResFailure(proto.T_FailureCode_T_MISSING_DATA, "Missing data"), nil
 
 			} else if result.Failure.FailureCode == paymentProto.FailureCode_INSUFFICIENT_BALANCE {
-				return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-					FailureCode:    proto.T_FailureCode_T_INSUFFICIENT_BALANCE,
-					FailureMessage: "Insufficient Balance",
-				}}}, nil
+				return response.TransferResFailure(proto.T_FailureCode_T_INSUFFICIENT_BALANCE, "Insufficient Balance"), nil
 			}
 
-			return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-				FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-				FailureMessage: "Something went wrong",
-			}}}, nil
+			return response.TransferResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 		}
-
 	}
-	return &proto.TransferRes{Result: &proto.TransferRes_Failure{Failure: &proto.T_Failure{
-		FailureCode:    proto.T_FailureCode_T_GENERAL_ERROR,
-		FailureMessage: "Something went wrong",
-	}}}, nil
+
+	return response.TransferResFailure(proto.T_FailureCode_T_GENERAL_ERROR, "Something went wrong"), nil
 }

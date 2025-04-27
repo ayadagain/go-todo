@@ -21,7 +21,6 @@ message T_Failure {
 
 message DepositRes {
   message Success {
-    int32 Status = 1;
     string Message = 2;
   }
 
@@ -37,7 +36,6 @@ message WithdrawReq {
 
 message WithdrawRes {
   message Success {
-    int32 Status = 1;
     string Message = 2;
   }
 
@@ -54,7 +52,6 @@ message TransferReq {
 }
 message TransferRes {
   message Success {
-    int32 Status = 1;
     string Message = 2;
 
   }
