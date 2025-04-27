@@ -1,6 +1,10 @@
 package response
 
-import "assm/service-todo/proto"
+import (
+	"assm/bf-todo/model"
+	paymentProto "assm/service-payment/proto"
+	"assm/service-todo/proto"
+)
 
 func WithdrawResSuccess(message string) *proto.WithdrawRes {
 	return &proto.WithdrawRes{
@@ -50,5 +54,32 @@ func TransferResFailure(failureCode proto.T_FailureCode, failureMessage string) 
 			FailureCode:    failureCode,
 			FailureMessage: failureMessage,
 		}},
+	}
+}
+
+func TransactionResponse(message string) *model.TransactionResponse {
+	return &model.TransactionResponse{
+		Message: message,
+	}
+}
+
+func BalanceResSuccess(balance float32) *paymentProto.BalanceRes {
+	return &paymentProto.BalanceRes{
+		Result: &paymentProto.BalanceRes_Success_{
+			Success: &paymentProto.BalanceRes_Success{
+				Balance: balance,
+			},
+		},
+	}
+}
+
+func BalanceResFailure(failureCode paymentProto.FailureCode, failureMessage string) *paymentProto.BalanceRes {
+	return &paymentProto.BalanceRes{
+		Result: &paymentProto.BalanceRes_Failure{
+			Failure: &paymentProto.Failure{
+				FailureCode:    failureCode,
+				FailureMessage: failureMessage,
+			},
+		},
 	}
 }
